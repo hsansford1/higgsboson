@@ -1,5 +1,6 @@
-# SC1_SM1_grp
-Group project for SC1/SM1
+# higgsboson
+Package for SM1/SC1 group project. Used to analyse the simulated data from the ATLAS experiment at CERN to optimise the analysis of the Higgs Boson.
+
 
 ## Installation
 This package can be installed using devtools and the command
