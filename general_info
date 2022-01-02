@@ -1,0 +1,24 @@
+File descriptions:
+
+./atlas-higgs-challenge-2014-v2.csv
+The 'master' dataset (so don't edit!). Downloaded from http://opendata.cern.ch/record/328 (public domain). Contains 818238 samples with 35 fields. 'PRI_jet_num' is integer, all other fields are floating point. More information on specific fields provided at the CERN webpage above. Zipped to reduce size
+
+./train_test_split.R
+Splits master file into training and testing samples, writes to ./test.csv and ./train.csv
+
+./kaggle/HiggsBosonCompetition_AMSMetric_rev1.py
+Python script for evaluating model results. If we wanted to score ourselves like in the kaggle competition, we could re-write this in R
+
+./kaggle/random_submission.csv
+An example showing how to format output in order to feed into the evaluation script
+
+./kaggle/kaggle_train_test_samples.zip
+Zipped file containing the kaggle training and testing samples, equivalent to ./test.csv and ./train.csv
+
+More info:
+
+- All kaggle data taken from www.kaggle.com/c/higgs-boson/
+
+- Background information on the experiment and challenge is in https://higgsml.lal.in2p3.fr/files/2014/04/documentation_v1.8.pdf
+
+- I've told .gitignore to ignore any folders and files ending with '_IGNORE' (case-sensitive), which may be useful if you want to avoid uploading large files unnecessarily
