@@ -97,7 +97,7 @@ AMS_hb = function(truth, response) {
 
 
 AMS = makeMeasure(
-  id = "AMS_hb", minimize = FALSE, best = 1, worst = -1,
+  id = "AMS_hb", minimize =FALSE,
   properties = c("classif"),
   name = "Approximate median significance",
   fun = function(task, model, pred, feats, extra.args) {
