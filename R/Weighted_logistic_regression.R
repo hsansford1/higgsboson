@@ -97,7 +97,7 @@ AMS_hb = function(truth, response) {
 
 
 AMS = makeMeasure(
-  id = "AMS_hb", minimize = FALSE, best = 1, worst = -1,
+  id = "AMS_hb", minimize = FALSE,
   properties = c("classif"),
   name = "Approximate median significance",
   fun = function(task, model, pred, feats, extra.args) {
@@ -110,7 +110,7 @@ AMS = makeMeasure(
 # Package mlr allows to use custom metrics (AMS here)
 
 #define task
-trainTask <- makeClassifTask(data = df_train,target = "Label", positive = 1)
+trainTask <- makeClassifTask(data = df_train, target = "Label", positive = 1, weights = weights)
 trainTask 
 
 #make learner
