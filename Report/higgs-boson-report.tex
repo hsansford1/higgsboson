@@ -1,4 +1,23 @@
 \documentclass[]{article}
+\usepackage[a4paper,top=3cm,bottom=3cm,left=3cm,right=3cm]{geometry}
+
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{amsfonts}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\usepackage{physics}
+\usepackage{tabularx}
+\usepackage{float}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
 
 %opening
 \title{Higgs Boson Machine Learning Project}
@@ -16,13 +35,50 @@ Write abstract here.
 
 \section{Introduction}
 
+\subsection{Background}
+
+The Higgs boson can \textit{decay} through various different processes, producing other particles in the process. In physics, one calls a decay into specific particles a \textit{channel}. Until fairly recently, the Higgs boson had been seen only in boson pair decay channels. It is now of importance to seek evidence on the decay into \textit{fermion} pairs, specifically \textit{tau-leptons} or \textit{b-quarks}, and to measure their characteristics \cite{higgs-challenge}. The ATLAS experiment \cite{ATLAS-experiment} was the first to report evidence of the \textit{H} to tau-tau channel and the goal of this report is to improve on this analysis.
+
+
+\subsection{Overview}
+
 The Atlas experiment at CERN provided simulated data that was used to optimise the analysis of the Higgs boson. In the Large Hadron Collider (LHC), proton bunches are accelerated in both directions on a circular trajectory. This results in some of the protons colliding as the bunches cross the ATLAS detector (called an \textit{event}), which produces hundreds of millions of proton-proton collisions per second. The particles resulting from each event are detected by sensors and, from this raw data, certain real-valued features are estimated \cite{higgs-challenge}.
 
 Most of the uninteresting events (called the \textit{background}) are discarded using a real-time multi-stage cascade classifier. However, many of the remaining events represent known processes that are also known as \textit{background}. Our aim is to find the region of the feature space in which there is a significant excess of events compared to what known background processes can explain (called \textit{signal}).
 
-\section{Background}
+Once the region has been fixed, the significance of the excess is determined using a statistical test. If the probability that the excess has been produced by background processes falls below a pre-determined limit, the new particle is deemed to be discovered.
 
-The Higgs boson can \textit{decay} through various different processes, producing other particles in the process. In physics, one calls a decay into specific particles a \textit{channel}. Until fairly recently, the Higgs boson had been seen only in boson pair decay channels. It is now of importance to seek evidence on the decay into \textit{fermion} pairs, specifically \textit{tau-leptons} or \textit{b-quarks}, and to measure their characteristics \cite{higgs-challenge}. The ATLAS experiment \cite{ATLAS-experiment} was the first to report evidence of the \textit{H} to tau-tau channel and the goal of this report is to improve on this analysis.
+
+
+
+\section{Problem Formulation}
+
+Let $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ ve the training set, where $\bm{x}_i \in \mathbb{R}^d$ is a $d$-dimensional feature vector, $y_i \in \{\text{b,s}\}$ is the label, and $w_i \in \mathbb{R}^+$ is a non-negative weight. Let $\mathcal{S} = \{i : y_i = \text{s}\}$ and $\mathcal{B} = \{i : y_i = \text{b}\}$ be the index sets of signal and background events respectively, and let $n_\text{s} = |\mathcal{S}|$ and $n_\text{b} = |\mathcal{B}|$ be the number of simulated signal and background events. 
+
+The simulated dataset also includes importance weights for each event. Since the objective function (\ref{AMS}) depends on the \textit{unnormalised sum} of weights, in order to make the setup invariant to the \textit{numbers} of simulated events $n_s$ and $n_b$, the sum across each set (test/training) and each class (signal/background) is set to be fixed, i.e.,
+\begin{equation}
+	\sum_{i \in \mathcal{S}} w_i = N_\text{s} \hspace{10pt} \text{and} \hspace{10pt} \sum_{i \in \mathcal{B}} w_i = N_\text{b}.
+\end{equation}
+These normalisation constants $N_\text{s}$ and $N_\text{b}$ are simply the \textit{expected total number} of signal and background events, respectively, during the time interval of the data taking.
+
+Now, let $g: \mathbb{R}^d \to \{\text{b,s}\}$ be a classifier. Let the \textit{selection region} $\mathcal{G} = \{\bm{x}: g(\bm{x}) = \text{s}\}$ be the set of points classified as signal, and let $\hat{\mathcal{G}}$ denote the \textit{index set} of points that $g$ classifies as signal, i.e.,
+$$ \hat{\mathcal{G}} = \{i:f(\bm{x}_i) \in \mathcal{G}\} = \{i : g(\bm{x}_i) = \text{s}\}. $$
+Then we have that
+\begin{equation}
+	s = \sum_{i \in \mathcal{S} \cap \hat{\mathcal{G}}} w_i
+\end{equation}
+is an unbiased estimator of the expected number of signal events selected by $g$, and similarly,
+\begin{equation}
+b = \sum_{i \in \mathcal{B} \cap \hat{\mathcal{G}}} w_i
+\end{equation}
+is an unbiased estimator of the expected number of background events selected by $g$. Alternatively, $s$ and $b$ are the \textit{unnormalised} true and false positive rates, respectively.
+
+High-energy physicists suggest the use of the \textit{approximate median significance} (AMS) objective function defined by
+\begin{equation}
+\label{AMS}
+	\text{AMS} = \sqrt{2 \left[ (s + b + b_\text{reg}) \ln \left( 1 + \frac{s}{b + b_\text{reg}} \right) - s \right]}
+\end{equation}
+to optimise the selection region for discovery significance, where $b_\text{reg}$ is a regularisation term suggested to be set to $b_\text{reg}=10$. Hence, our aim is simply to train a classifier $g$ based on the training data $\mathcal{D}$ with the goal of maximising the AMS on some unseen test data.
 
 \bibliographystyle{plain}
 \bibliography{refs}
