@@ -1,0 +1,30 @@
+\documentclass[]{article}
+
+%opening
+\title{Higgs Boson Machine Learning Project}
+\author{Ettore Fincato, Hannah Sansford, Harry Tata}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+Write abstract here.
+
+\end{abstract}
+
+\section{Introduction}
+
+The Atlas experiment at CERN provided simulated data that was used to optimise the analysis of the Higgs boson. In the Large Hadron Collider (LHC), proton bunches are accelerated in both directions on a circular trajectory. This results in some of the protons colliding as the bunches cross the ATLAS detector (called an \textit{event}), which produces hundreds of millions of proton-proton collisions per second. The particles resulting from each event are detected by sensors and, from this raw data, certain real-valued features are estimated \cite{higgs-challenge}.
+
+Most of the uninteresting events (called the \textit{background}) are discarded using a real-time multi-stage cascade classifier. However, many of the remaining events represent known processes that are also known as \textit{background}. Our aim is to find the region of the feature space in which there is a significant excess of events compared to what known background processes can explain (called \textit{signal}).
+
+\section{Background}
+
+The Higgs boson can \textit{decay} through various different processes, producing other particles in the process. In physics, one calls a decay into specific particles a \textit{channel}. Until fairly recently, the Higgs boson had been seen only in boson pair decay channels. It is now of importance to seek evidence on the decay into \textit{fermion} pairs, specifically \textit{tau-leptons} or \textit{b-quarks}, and to measure their characteristics \cite{higgs-challenge}. The ATLAS experiment \cite{ATLAS-experiment} was the first to report evidence of the \textit{H} to tau-tau channel and the goal of this report is to improve on this analysis.
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}
