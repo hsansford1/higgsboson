@@ -10,7 +10,6 @@ library(pROC)
 library(checkmate)
 library(BBmisc)
 library(testit)
-
 library(devtools)
 #install_github("https://github.com/hsansford1/higgsboson")
 library(higgsboson)
@@ -26,6 +25,7 @@ df_train <- df_train[,-31] #remove weights
 
 
 df_train$Label=ifelse(df_train$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) for logistic regresion
+
 label_factor=as.factor(df_train$Label)
 df_train["Label"]=label_factor #need this as factor for caret
 
@@ -76,9 +76,9 @@ ggplot(plt, aes(Prediction,Reference, fill= Freq)) +
 #idea of mlr package is similar to scikit learn: create a Task -> make a learner -> train.
 
 
+
 #install_github("https://github.com/mlr-org/mlr", force = T)
 library(mlr)
-
 
 
 # Create measure AMS using makeMeasure() from mlr
@@ -110,18 +110,121 @@ AMS = makeMeasure(
 # Package mlr allows to use custom metrics (AMS here)
 
 #define task
-trainTask <- makeClassifTask(data = df_train, target = "Label", positive = 1, weights = weights)
+trainTask <- makeClassifTask(data = df_train,
+                             target = "Label",
+                             positive = 1,
+                             weights = weights
+                             )
 trainTask 
 
 #make learner
-logistic.learner <- makeLearner("classif.logreg",predict.type = "response")
+logistic.learner <- makeLearner("classif.logreg",
+                                predict.type = "response")
 
 #cv training
-cv.logistic <- crossval(learner = logistic.learner,task = trainTask, iters = 10,stratify = TRUE,measures = AMS, show.info = F)
-cv.logistic$aggr
+cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5 ,
+                        stratify = FALSE, 
+                        measures = AMS,
+                        show.info = F)
+cv.logistic$aggr   # If we do it with no weights AMS is larger...
 cv.logistic$measures.test
 
 #get the trained model
 fmodel <- train(logistic.learner,trainTask)
 getLearnerModel(fmodel)
+
+
+
+#####################################################################
+
+# Two-stage maximisation of AMS: Kotlowsky's paper
+
+#Idea: learn a model (e.g. log reg) f
+#calibrate classification threshold theta by maximising \hat(AMS)(theta) on a validation set
+
+#create the validation set (caret). This should preserve the overall class distribution of the data
+
+trainIndex <- createDataPartition(df_train$Label, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+head(trainIndex)
+
+Train <- df_train[ trainIndex,]
+Valid  <- df_train[-trainIndex,]
+
+
+#Logistic regression on Train: CV and sensitivity as metric
+
+weights_Train <- weights[trainIndex] #I think we must recompute weights...
+
+train_control <- trainControl(method = "cv", number = 10) 
+
+logreg_weighted <- caret::train(Label ~ .,
+                       data = Train,
+                       trControl = train_control,
+                       method = "glm",
+                       metric="sensitivity",
+                       weights = weights_Train,
+                       family=binomial()
+)
+
+
+
+print(logreg_weighted)
+cm <- confusionMatrix(logreg_weighted)
+TPR <- cm$table[2,2]/(cm$table[2,2]+cm$table[1,2]) #TPR - sensitivity
+FPR <- cm$table[2,1]/(cm$table[2,1]+cm$table[1,1])
+TPR
+
+
+# sensitivity is very low: change threshold. How? Maximising AMS on Valid
+
+
+
+theta <- 0.001
+probabilities <- predict(logreg_weighted$finalModel,Valid[,1:30], type = "response")
+mean(probabilities) #very low!
+predicted.classes <- ifelse(probabilities > theta, 1, 0)
+#predicted.classes
+
+
+Label_valid <-  as.array(unlist(Valid[,31]))
+levels(Label_valid)
+Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
+
+confusion_table = table(predicted.classes, Label_valid)
+confusion_table
+
+sensitivity(
+  data = as.factor(predicted.classes),
+  reference = as.array(unlist(Valid[,31])),
+  positive = levels(as.array(unlist(Valid[,31])))[2]
+)
+
+s  <- confusion_table[2,2]/(confusion_table[2,2]+confusion_table[1,2]) #TPR - sensitivity
+b  <- confusion_table[2,1]/(confusion_table[2,1]+confusion_table[1,1])
+
+AMS_theta <- sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
+AMS_theta
+
+#For the weighted logistic regression, AMS is decreasing with theta, for \theta \in ]0,1[
+
+
+
+# pred_tibble <- tibble("target" = test_pfi,
+#                       "prediction" = predicted.classes)
+# table <- as_tibble(table(pred_tibble))
+# 
+# plot_confusion_matrix(table, 
+#                       target_col = "target", 
+#                       prediction_col = "prediction",
+#                       counts_col = "n")
+
+
+
+
+
+
+
+
 
