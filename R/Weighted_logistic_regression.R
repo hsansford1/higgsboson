@@ -179,33 +179,45 @@ TPR
 
 # sensitivity is very low: change threshold. How? Maximising AMS on Valid
 
+#Function which, given a (general) fitted model and validation data, finds AMS for
+#some value of theta. Useful for plotting and finding the maximum.
+
+AMS <- function(f, valid_set, valid_y){
+  
+  AMS_theta <- function(theta){
+  
+             probabilities <- predict(f$finalModel,valid_set, type = "response")
+             #mean(probabilities) 
+    
+             predicted.classes <- ifelse(probabilities > theta, 1, 0)
+             Label_valid <-  as.array(unlist(valid_y))
+             #levels(Label_valid)
+             Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
+
+             confusion_table <- table(predicted.classes, Label_valid)
+             s  <- confusion_table[2,2]/(confusion_table[2,2]+confusion_table[1,2]) #TPR - sensitivity
+             b  <- confusion_table[2,1]/(confusion_table[2,1]+confusion_table[1,1])
+
+             sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
+
+         }
+         
+     }
+
+#Plot AMS for small values of threshold theta
+
+theta_vals <- as.data.frame(runif(100, 0.0001, 0.5)) # generate small sample thresholds theta
+AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31])) #compute AMS(theta)
+plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
 
 
-theta <- 0.001
-probabilities <- predict(logreg_weighted$finalModel,Valid[,1:30], type = "response")
-mean(probabilities) #very low!
-predicted.classes <- ifelse(probabilities > theta, 1, 0)
-#predicted.classes
 
+# sensitivity(
+#   data = as.factor(predicted.classes),
+#   reference = as.array(unlist(Valid[,31])),
+#   positive = levels(as.array(unlist(Valid[,31])))[2]
+# )
 
-Label_valid <-  as.array(unlist(Valid[,31]))
-levels(Label_valid)
-Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
-
-confusion_table = table(predicted.classes, Label_valid)
-confusion_table
-
-sensitivity(
-  data = as.factor(predicted.classes),
-  reference = as.array(unlist(Valid[,31])),
-  positive = levels(as.array(unlist(Valid[,31])))[2]
-)
-
-s  <- confusion_table[2,2]/(confusion_table[2,2]+confusion_table[1,2]) #TPR - sensitivity
-b  <- confusion_table[2,1]/(confusion_table[2,1]+confusion_table[1,1])
-
-AMS_theta <- sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
-AMS_theta
 
 #For the weighted logistic regression, AMS is decreasing with theta, for \theta \in ]0,1[
 
