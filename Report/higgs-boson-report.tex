@@ -59,7 +59,16 @@ The simulated dataset also includes importance weights for each event. Since the
 \begin{equation}
 	\sum_{i \in \mathcal{S}} w_i = N_\text{s} \hspace{10pt} \text{and} \hspace{10pt} \sum_{i \in \mathcal{B}} w_i = N_\text{b}.
 \end{equation}
-These normalisation constants $N_\text{s}$ and $N_\text{b}$ are simply the \textit{expected total number} of signal and background events, respectively, during the time interval of the data taking.
+These normalisation constants $N_\text{s}$ and $N_\text{b}$ are simply the \textit{expected total number} of signal and background events, respectively, during the time interval of the data taking. The individual weights are then proportional to the conditional densities,
+$$ p_\text{s}(\bm{x}_i) = p(\bm{x}_i|y=\text{s}) \hspace{10pt} \text{and} \hspace{10pt} p_\text{b}(\bm{x}_i) = p(\bm{x}_i|y=\text{b}), $$
+divided by the instrumental densities $q_\text{s}(\bm{x}_i)$ and $q_\text{b}(\bm{x}_i)$, i.e.,
+\begin{equation}
+	w_i \propto \begin{cases}
+	p_\text{s}(\bm{x}_i)/ q_\text{s}(\bm{x}_i), & \text{if} \hspace{10pt} y_i= \text{s}. \\
+	p_\text{b}(\bm{x}_i) / q_\text{b}(\bm{x}_i), & \text{if} \hspace{10pt} y_i= \text{b}.
+	\end{cases}
+\end{equation}
+
 
 Now, let $g: \mathbb{R}^d \to \{\text{b,s}\}$ be a classifier. Let the \textit{selection region} $\mathcal{G} = \{\bm{x}: g(\bm{x}) = \text{s}\}$ be the set of points classified as signal, and let $\hat{\mathcal{G}}$ denote the \textit{index set} of points that $g$ classifies as signal, i.e.,
 $$ \hat{\mathcal{G}} = \{i:f(\bm{x}_i) \in \mathcal{G}\} = \{i : g(\bm{x}_i) = \text{s}\}. $$
