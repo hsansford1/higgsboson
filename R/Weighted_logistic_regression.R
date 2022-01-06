@@ -175,10 +175,19 @@ Valid  <- df_train[-trainIndex,]
 N_s <- sum(weights[df_train$Label == 1])
 N_b <- sum(weights[df_train$Label == 0])
 
-weights_Train <- weights[trainIndex]#I think we must recompute weights...
-# reweighting
-weights_Train[Train$Label == 1] <- weights_Train[Train$Label == 1] * (N_s / sum(weights_Train[Train$Label == 1]))
-weights_Train[Train$Label == 0] <- weights_Train[Train$Label == 0] * (N_b / sum(weights_Train[Train$Label == 0]))
+weights_Train <- weights[trainIndex]
+weights_Valid <- weights[-trainIndex]
+
+# function for reweighting
+reweight <- function(weights, labels, N_s, N_b){
+  new_weights <- weights
+  new_weights[labels == 1] <- weights[labels == 1] * N_s / sum(weights[labels == 1])
+  new_weights[labels == 0] <- weights[labels == 0] * N_b / sum(weights[labels == 0])
+  return(new_weights)
+}
+
+weights_Train <- reweight(weights_Train, Train$Label, N_s, N_b)
+weights_Valid <- reweight(weights_Valid, Valid$Label, N_s, N_b)
 
 train_control <- trainControl(method = "cv", number = 10)
 
@@ -204,7 +213,7 @@ TPR
 #Function which, given a (general) fitted model and validation data, finds AMS for
 #some value of theta. Useful for plotting and finding the maximum.
 
-AMS <- function(f, valid_set, valid_y){
+AMS <- function(f, valid_set, valid_y, valid_weights){
 
   AMS_theta <- function(theta){
 
@@ -216,9 +225,8 @@ AMS <- function(f, valid_set, valid_y){
              #levels(Label_valid)
              Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
 
-             confusion_table <- table(predicted.classes, Label_valid)
-             s  <- confusion_table[2,2]/(confusion_table[2,2]+confusion_table[1,2]) #TPR - sensitivity
-             b  <- confusion_table[2,1]/(confusion_table[2,1]+confusion_table[1,1])
+             s <- sum(weights_Valid[(Label_valid == 1) & (predicted.classes == 1)])
+             b <- sum(weights_Valid[(Label_valid == 0) & (predicted.classes == 1)])
 
              sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
 
@@ -228,8 +236,8 @@ AMS <- function(f, valid_set, valid_y){
 
 #Plot AMS for small values of threshold theta
 
-theta_vals <- as.data.frame(runif(100, 0.0001, 0.5)) # generate small sample thresholds theta
-AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31])) #compute AMS(theta)
+theta_vals <- as.data.frame(runif(100, 0.0001, 0.05)) # generate small sample thresholds theta
+AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31], weights_Valid)) #compute AMS(theta)
 plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
 
 
