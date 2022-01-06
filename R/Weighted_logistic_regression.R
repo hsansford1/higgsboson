@@ -69,7 +69,6 @@ ggplot(plt, aes(Prediction,Reference, fill= Freq)) +
   labs(x = "Prediction",y = "Reference")
 
 
-
 ########################################################################
 
 # Logistic regression with custom metric AMS with mlr package
@@ -173,8 +172,13 @@ Valid  <- df_train[-trainIndex,]
 
 
 #Logistic regression on Train: CV and sensitivity as metric
+N_s <- sum(weights[df_train$Label == 1])
+N_b <- sum(weights[df_train$Label == 0])
 
-weights_Train <- weights[trainIndex] #I think we must recompute weights...
+weights_Train <- weights[trainIndex]#I think we must recompute weights...
+# reweighting
+weights_Train[Train$Label == 1] <- weights_Train[Train$Label == 1] * (N_s / sum(weights_Train[Train$Label == 1]))
+weights_Train[Train$Label == 0] <- weights_Train[Train$Label == 0] * (N_b / sum(weights_Train[Train$Label == 0]))
 
 train_control <- trainControl(method = "cv", number = 10)
 
