@@ -5,7 +5,7 @@ library(glmnet)
 library(ROCR)
 library(caret)
 library(cvms)
-library(tibble) 
+library(tibble)
 library(pROC)
 library(checkmate)
 library(BBmisc)
@@ -39,7 +39,7 @@ weights <- train$Weight # extract weights
 #Weighted Logistic regression with common metrics (e.g. sensitivity)
 
 
-train_control <- trainControl(method = "cv", number = 10) 
+train_control <- trainControl(method = "cv", number = 10)
 
 # !!! future task is to modify sensitivity to AMS metric !!!
 model_weights <- train(Label ~ .,
@@ -66,7 +66,7 @@ plt$Prediction <- factor(plt$Prediction, levels=rev(levels(plt$Prediction)))
 ggplot(plt, aes(Prediction,Reference, fill= Freq)) +
   geom_tile() + geom_text(aes(label=Freq)) +
   scale_fill_gradient(low="white", high="#009194") +
-  labs(x = "Prediction",y = "Reference") 
+  labs(x = "Prediction",y = "Reference")
 
 
 
@@ -84,24 +84,32 @@ library(mlr)
 # Create measure AMS using makeMeasure() from mlr
 
 AMS_hb = function(truth, response) {
-  
+
   conf.mat = table(response, truth)
   conf.mat = conf.mat / sum(conf.mat)
   s  <- conf.mat[2,2]/(conf.mat[2,2]+conf.mat[1,2]) #TPR - sensitivity
   b  <- conf.mat[2,1]/(conf.mat[2,1]+conf.mat[1,1])
-  
+
   sqrt(2*((s+b+10)*log(1+s/(b+10))-s)) #calculate AMS
-  
+
+}
+
+AMS_weighted = function(truth, response) {
+
+  s <- sum(weights[(truth == 1) & (response == 1)])
+  b <- sum(weights[(truth == 0) & (response == 1)])
+
+  sqrt(2*((s+b+10)*log(1+s/(b+10))-s)) #calculate AMS
+
 }
 
 
-
 AMS = makeMeasure(
-  id = "AMS_hb", minimize = FALSE,
+  id = "AMS_weighted", minimize = FALSE,
   properties = c("classif"),
   name = "Approximate median significance",
   fun = function(task, model, pred, feats, extra.args) {
-    AMS_hb(pred$data$truth, pred$data$response)
+    AMS_weighted(pred$data$truth, pred$data$response)
   }
 )
 
@@ -115,7 +123,7 @@ trainTask <- makeClassifTask(data = df_train,
                              positive = 1,
                              weights = weights
                              )
-trainTask 
+trainTask
 
 #make learner
 logistic.learner <- makeLearner("classif.logreg",
@@ -123,7 +131,7 @@ logistic.learner <- makeLearner("classif.logreg",
 
 #cv training
 cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5 ,
-                        stratify = FALSE, 
+                        stratify = FALSE,
                         measures = AMS,
                         show.info = F)
 cv.logistic$aggr   # If we do it with no weights AMS is larger...
@@ -133,6 +141,17 @@ cv.logistic$measures.test
 fmodel <- train(logistic.learner,trainTask)
 getLearnerModel(fmodel)
 
+
+# get s and b using weights
+pred <- predict(fmodel, trainTask)
+truth <- pred$data$truth
+response <- pred$data$response
+
+s <- sum(weights[(truth == 1) & (response == 1)])
+b <- sum(weights[(truth == 0) & (response == 1)])
+
+AMS <- sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
+AMS
 
 
 #####################################################################
@@ -144,8 +163,8 @@ getLearnerModel(fmodel)
 
 #create the validation set (caret). This should preserve the overall class distribution of the data
 
-trainIndex <- createDataPartition(df_train$Label, p = .8, 
-                                  list = FALSE, 
+trainIndex <- createDataPartition(df_train$Label, p = .8,
+                                  list = FALSE,
                                   times = 1)
 head(trainIndex)
 
@@ -157,7 +176,7 @@ Valid  <- df_train[-trainIndex,]
 
 weights_Train <- weights[trainIndex] #I think we must recompute weights...
 
-train_control <- trainControl(method = "cv", number = 10) 
+train_control <- trainControl(method = "cv", number = 10)
 
 logreg_weighted <- caret::train(Label ~ .,
                        data = Train,
@@ -167,7 +186,6 @@ logreg_weighted <- caret::train(Label ~ .,
                        weights = weights_Train,
                        family=binomial()
 )
-
 
 
 print(logreg_weighted)
@@ -183,12 +201,12 @@ TPR
 #some value of theta. Useful for plotting and finding the maximum.
 
 AMS <- function(f, valid_set, valid_y){
-  
+
   AMS_theta <- function(theta){
-  
+
              probabilities <- predict(f$finalModel,valid_set, type = "response")
-             #mean(probabilities) 
-    
+             #mean(probabilities)
+
              predicted.classes <- ifelse(probabilities > theta, 1, 0)
              Label_valid <-  as.array(unlist(valid_y))
              #levels(Label_valid)
@@ -201,7 +219,7 @@ AMS <- function(f, valid_set, valid_y){
              sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
 
          }
-         
+
      }
 
 #Plot AMS for small values of threshold theta
@@ -226,9 +244,9 @@ plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pc
 # pred_tibble <- tibble("target" = test_pfi,
 #                       "prediction" = predicted.classes)
 # table <- as_tibble(table(pred_tibble))
-# 
-# plot_confusion_matrix(table, 
-#                       target_col = "target", 
+#
+# plot_confusion_matrix(table,
+#                       target_col = "target",
 #                       prediction_col = "prediction",
 #                       counts_col = "n")
 
