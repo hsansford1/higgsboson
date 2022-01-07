@@ -236,11 +236,13 @@ AMS <- function(f, valid_set, valid_y, valid_weights){
 
 #Plot AMS for small values of threshold theta
 
-theta_vals <- as.data.frame(runif(100, 0.0001, 0.05)) # generate small sample thresholds theta
+theta_vals <- as.data.frame(seq(0.0001, 0.05, length.out=500)) # generate small sample thresholds theta
 AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31], weights_Valid)) #compute AMS(theta)
 plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
 
-
+max_theta <- theta_vals[which.max(AMS_vals),1]
+max_AMS <- AMS_vals[which.max(AMS_vals)]
+max_AMS
 
 # sensitivity(
 #   data = as.factor(predicted.classes),
@@ -264,9 +266,45 @@ plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pc
 
 
 
+#####################################################################################
+
+# Cross-Validation function for choosing threshold
 
 
+threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
+  N_s <- sum(weights[label == 1])
+  N_b <- sum(weights[label == 0])
 
+  train_control <- trainControl(method = "cv", number = 2)
+  theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
+  AMS_vals <- matrix(0, nrow=n, ncol=k)
 
+  validFolds <- createFolds(label, k)
+  for (i in 1:k){
 
+    Train <- df[-validFolds[[i]],]
+    Train$Label <- label[-validFolds[[i]]]
+    Train_weights <- reweight(weights[-validFolds[[i]]], Train$Label, N_s, N_b)
+
+    Valid  <- df_train[validFolds[[i]],]
+    Valid$Label <- label[validFolds[[i]]]
+    Valid_weights <- reweight(weights[validFolds[[i]]], Valid$Label, N_s, N_b)
+
+    logreg_weighted <- caret::train(Label ~ .,
+                                  data = Train,
+                                  trControl = train_control,
+                                  method = "glm",
+                                  metric="sensitivity",
+                                  weights = Train_weights,
+                                  family=binomial()
+    )
+    AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted, Valid[,-length(Valid)], Valid$Label, Valid_weights))
+  }
+  AMS_vals <- apply(AMS_vals, 1, mean)
+  max_theta <- theta_vals[which.max(AMS_vals),1]
+  max_AMS <- AMS_vals[which.max(AMS_vals)]
+  return(c(max_theta=max_theta, max_AMS=max_AMS, AMS_vals=AMS_vals))
+}
+
+theta_CV <- threshold_CV(df_train[,1:30], df_train$Label, weights, theta_0=0.0001, theta_1=0.02)
