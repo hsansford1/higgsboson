@@ -18,6 +18,7 @@
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{remark}[theorem]{Remark} 
 
 %opening
 \title{Higgs Boson Machine Learning Project}
@@ -74,10 +75,12 @@ Now, let $g: \mathbb{R}^d \to \{\text{b,s}\}$ be a classifier. Let the \textit{s
 $$ \hat{\mathcal{G}} = \{i:f(\bm{x}_i) \in \mathcal{G}\} = \{i : g(\bm{x}_i) = \text{s}\}. $$
 Then we have that
 \begin{equation}
+\label{s weights}
 	s = \sum_{i \in \mathcal{S} \cap \hat{\mathcal{G}}} w_i
 \end{equation}
 is an unbiased estimator of the expected number of signal events selected by $g$, and similarly,
 \begin{equation}
+\label{b weights}
 b = \sum_{i \in \mathcal{B} \cap \hat{\mathcal{G}}} w_i
 \end{equation}
 is an unbiased estimator of the expected number of background events selected by $g$. Alternatively, $s$ and $b$ are the \textit{unnormalised} true and false positive rates, respectively.
@@ -88,6 +91,70 @@ High-energy physicists suggest the use of the \textit{approximate median signifi
 	\text{AMS} = \sqrt{2 \left[ (s + b + b_\text{reg}) \ln \left( 1 + \frac{s}{b + b_\text{reg}} \right) - s \right]}
 \end{equation}
 to optimise the selection region for discovery significance, where $b_\text{reg}$ is a regularisation term suggested to be set to $b_\text{reg}=10$. Hence, our aim is simply to train a classifier $g$ based on the training data $\mathcal{D}$ with the goal of maximising the AMS on some unseen test data.
+
+\section{Maximising the AMS}
+
+Having decided a statistical model for classification, its parameters will be tuned by maximising the AMS. This will be done in two ways.
+
+\begin{itemize}
+\item \textbf{Direct maximisation}: One can consider the AMS as an error/objective measure in a cross validation procedure. So the model will be tuned by a cross validation (cv) procedure by looking at the coefficients which directly maximise the AMS.
+
+\item \textbf{Two-stage maximisation}: Given a real-valued function $f$ (e.g. a linear $f(w,x)=w'x$), one can always get a classifier by setting a threshold $\theta \in A\subset \mathbb{R}$ and a transformation $g$ and considering
+\begin{equation}
+\label{classifier from f}
+h(\theta):=\operatorname{sgn}(g(f)-\theta)\in \{-1,1\}
+\end{equation}
+One can therefore train and tune \textit{a suitable transformation $g$ of} $f$ "independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. This is based on \cite{kotlowski2014consistent}
+\end{itemize}
+
+\subsection{Two-stage maximisation}
+
+While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. This section is dedicated to the explanation of the two stage procedure for a  classifier $h:\mathcal{X}\to \{-1,1\}$ defined as in \ref{classifier from f} , where $\mathcal{X}$ denoted the feature espace and \textbf{the suitable transformation $g$ is given by the logistic loss} of $f$. \\
+
+By incorporating the weights to the probabilities, without loss of generality one may write  $s$ and $b$ from \ref{s weights} and \ref{b weights} as
+
+$$s=s(h):=\mathbb{P}(h(X)=1,Y=1) \ \text{,} \ \ \ b=b(h):=\mathbb{P}(h(X)=-1,Y=1)$$
+
+where $X$ denotes a random imput vector and $Y$ a random binary response. The paper justifies the two stage procedure explained above for logistic loss transformation of $f$, as follows. Given a classifier $h$ obtained from $f$ as in \ref{classifier from f}, one can define the "AMS regret" as
+\begin{equation}
+\label{regret}
+R_{AMS}(h):= AMS^2(h^*)-AMS^2(h)
+\end{equation}
+where $$h^*:=\underset{h}{\text{argmax}}AMS^2(h).$$
+
+Similarly, the "logistic regret" of $f$ is defined as
+\begin{equation}
+\label{logistic regret}
+R_{log}(f):= L(f)-L(f^*)
+\end{equation}
+for the expected logistic loss transformation of $f$ $$L(f):=\mathbb{E}\Big[\log(1+Ye^{-f(X)})\Big]$$ and $$f^*:=\underset{f}{\text{argmax}}L(f)$$
+
+The formal justification of the idea of \begin{itemize}
+\item  Training a logistic loss transformation of $f$ and
+\item Finding the threshold $\theta$ in \ref{classifier from f} by maximising the AMS on a second stage
+\end{itemize}
+comes from the following theorem.
+
+\begin{theorem}
+\label{thm: two stage maximisation}
+Given a real-valued function $f$ and the related classifier $h(\theta):=\operatorname{sgn}(f-\theta)$,  let $\hat{\theta}:=\underset{\theta}{\operatorname{argmax}} AMS(h)$. Then,
+\begin{equation}
+\label{regret inequality}
+R_{AMS}(h(\theta))\leq \frac{s(h^*)}{b(h^*)}\sqrt{\frac{1}{2}R_{log}(f)}
+\end{equation}
+
+\end{theorem}
+\begin{proof}
+ See \cite{kotlowski2014consistent}-Theorem 2.
+\end{proof}
+
+That is, the AMS regret of the classifier $h(\theta)$ is upper bounded by the logistic regret of the underlying $f$. It is possible to prove that it is sufficient to optimize $\theta$ on the empirical counterpart of AMS calculated on a separate validation sample. 
+
+
+\begin{remark}
+The use of a logistic loss transformation of $f$ is particularly suited for a classification task. For example, it allows us to train (on the first stage) models such as a logistic regression. 
+\end{remark}
+
 
 \bibliographystyle{plain}
 \bibliography{refs}
