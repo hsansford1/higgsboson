@@ -104,34 +104,32 @@ Having decided a statistical model for classification, its parameters will be tu
 \label{classifier from f}
 h(\theta):=\operatorname{sgn}(f-\theta)\in \{-1,1\}
 \end{equation}
-One can therefore train and tune $f$ "independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. For example, one could train $f$ in a logistic regression (i.e. train $f$ s.t. it minimises a logistic loss), and then, on a second stage, choose the classification threshold based on AMS. This approach is presented in \cite{kotlowski2014consistent}
+One can therefore train and tune $f$ ``independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. For example, one could train $f$ in a logistic regression (i.e. train $f$ s.t. it minimises a logistic loss), and then, on a second stage, choose the classification threshold based on AMS. This approach is presented in \cite{kotlowski2014consistent}
 \end{itemize}
 
 \subsection{Two-stage maximisation}
 
-While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. This section is dedicated to the explanation of the two stage procedure for a  classifier $h:\mathcal{X}\to \{-1,1\}$ defined as in \ref{classifier from f} , where $\mathcal{X}$ denotes the features space, and \textbf{$f$ is trained by minimising a logistic loss}.\\
+While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. This section is dedicated to the explanation of the two stage procedure for a  classifier $h:\mathcal{X}\to \{-1,1\}$, as defined in (\ref{classifier from f}) , where $\mathcal{X}$ denotes the features space, and \textbf{$f$ is trained by minimising a logistic loss}.\\
 
-By incorporating the weights to the probabilities, without loss of generality one may write  $s$ and $b$ from \ref{s weights} and \ref{b weights} as
+By incorporating the weights to the probabilities, without loss of generality one may write  $s$ and $b$ from (\ref{s weights}) and (\ref{b weights}) as
 
 $$s=s(h):=\mathbb{P}(h(\bm{X})=1,Y=1) \ \text{,} \ \ \ b=b(h):=\mathbb{P}(h(\bm{X})=-1,Y=1)$$
-
-where $\bm{X}$ denotes a random imput vector and $Y$ a random binary response. The paper justifies the two stage procedure explained above for logistic loss transformation of $f$, as follows. Given a classifier $h$ obtained from $f$ as in \ref{classifier from f}, one can define the "AMS regret" as
+where $\bm{X}$ denotes a random imput vector and $Y$ a random binary response. The paper justifies the two stage procedure explained above for logistic loss transformation of $f$, as follows. Given a classifier $h$ obtained from $f$ as in (\ref{classifier from f}), one can define the``AMS regret" as
 \begin{equation}
 \label{regret}
 R_{AMS}(h):= \text{AMS}^2(h^*)-\text{AMS}^2(h)
 \end{equation}
 where $$h^*:=\underset{h}{\text{argmax}} \ \text{AMS}^2(h).$$
-
-Similarly, the "logistic regret" of $f$ is defined as
+Similarly, the``logistic regret" of $f$ is defined as
 \begin{equation}
 \label{logistic regret}
 R_{log}(f):= L(f)-L(f^*)
 \end{equation}
 for the expected logistic loss transformation of $f$ $$L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big]$$ and $$f^*:=\underset{f}{\text{argmax}} \ L(f)$$
-
-The formal justification of the idea of \begin{itemize}
-\item  Training a logistic loss transformation of $f$ and
-\item Finding the threshold $\theta$ in \ref{classifier from f} by maximising the AMS on a second stage
+The formal justification of the idea of 
+\begin{itemize}
+\item training a logistic loss transformation of $f$, and
+\item finding the threshold $\theta$ in \ref{classifier from f} by maximising the AMS on a second stage
 \end{itemize}
 comes from the following theorem.
 
@@ -155,7 +153,7 @@ That is, the AMS regret of classifier $h(\theta)$ is upper bounded by the logist
 Training $f$ by minimising a logistic loss is particularly suited for a classification task. For example, it allows us to train (on the first stage) models such as a logistic regression. 
 \end{remark}
 \begin{remark}
-As far as logistic regression is concerned, recall that after model's coefficients $\bm{w}$ have been estimated, classification for a new observation $y_0$ can be done by setting  $\hat{\bm{w}}'\bm{x}_0>\theta$ for some suitable $\theta \in \mathbb{R}$. In a "proper" logistic regression, $\theta$ is directly set to $0$. Here we choose it on a second stage by maximising AMS.
+As far as logistic regression is concerned, recall that after model's coefficients $\bm{w}$ have been estimated, classification for a new observation $y_0$ can be done by setting  $\hat{\bm{w}}'\bm{x}_0>\theta$ for some suitable $\theta \in \mathbb{R}$. In a "proper" logistic regression, $\theta$ is directly set to $0$. Here we choose it during a second stage via maximising AMS.
 \end{remark}
 
 
