@@ -39,7 +39,7 @@ data <- read_csv('./data/atlas-higgs-challenge-2014-v2.zip')
 # used when reweighting, etc.
 
 training <- filter(data, KaggleSet == 't')
-training <- select(test, -c('KaggleSet', 'KaggleWeight'))
+training <- select(training, -c('KaggleSet', 'KaggleWeight'))
 save(training, file = './data/training.RData')
 
 test <- filter(data, (KaggleSet == 'b') | (KaggleSet == 'v'))

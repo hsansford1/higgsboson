@@ -18,37 +18,6 @@ reweight <- function(weights, labels, N_s, N_b){
   return(new_weights)
 }
 
-# 'reweight' seems not to do anything...
-# e.g.:
-load('./data/training.RData')
-reweighted_training <- training
-reweighted_training$reweight1 <- reweight(training$Weight, training$Label, Ns(), Nb())
-reweighted_training$reweight1 == reweighted_training$Weight
-sum(filter(reweighted_training, Label=='s')$reweight1) # != Ns
-# new_weights no different
-
-reweight2 <- function(weights, labels){
-  df <- data.frame(weights, labels)
-
-  oldsum_s <- sum(filter(df, labels=='s')$weights)
-  oldsum_b <- sum(filter(df, labels=='b')$weights)
-
-  coeff_s <- Ns() / oldsum_s
-  coeff_b <- Nb() / oldsum_b
-
-  df <- df %>% mutate(new_weights = if_else(labels=='s',
-                                            coeff_s*weights,
-                                            coeff_b*weights))
-  return(df$new_weights)
-}
-
-load('./data/training.RData')
-reweighted_training <- training
-reweighted_training$reweight2 <- reweight2(training$Weight, training$Label)
-reweighted_training$reweight2 == reweighted_training$Weight
-sum(filter(reweighted_training, Label=='s')$reweight2) # == Ns
-# new weights different, and sum of positives is Ns
-
 AMS_base <- function(s, b, b_reg=10){
 
   # Objective function for challenge: approximate median significance
@@ -98,13 +67,8 @@ AMS <- function(f, valid_set, valid_y, valid_weights){
 
 threshold_CV <- function(df, label, weights, theta_0, theta_1, k, n=50){
 
-  N_s <- sum(weights[label == 1])
-  N_b <- sum(weights[label == 0])
-
-  # # I don't understand this well enough to play with it myself
-  # # but can someone try with: (might fix AMS values)
-  # N_s <- Ns()
-  # N_b <- Nb()
+  N_s <- Ns()
+  N_b <- Nb()
 
   train_control <- trainControl(method = "cv", number = 2)
   theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
@@ -150,21 +114,19 @@ AMS_weighted = function(truth, response) {
 
 }
 
+# Think it might be better to document functions that labels should be 0/1 because then our functions are more general for binary problems
 AMS_weighted_gen = function(truth, response, weights) {
 # more general version of AMS_weighted,
 # takes truth (actual outcome), response (predicted outcome), and weight vector
 # returns AMS
 
-# truth & response can be character ('s' & 'b'),
-#                         factor    (levels named 's' & 'b')
-#                         logical   (TRUE = 's', FALSE = 'b')
-#                         numeric   (1 = 's',    0 = 'b')
+# truth & response can be s/b or 1/0
 # both vectors should be same type
 
-  if(is.character(truth) | is.factor(truth)){
+  if((truth[1] == 's') | (truth[1] == 'b')){
     s <- sum(weights[(truth == 's') & (response == 's')])
     b <- sum(weights[(truth == 'b') & (response == 's')])
-  } else if(is.logical(truth) | is.numeric(truth)){
+  } else if((truth[1] == 1) | (truth[1] == 0)){
     s <- sum(weights[(truth == 1) & (response == 1)])
     b <- sum(weights[(truth == 0) & (response == 1)])
   }

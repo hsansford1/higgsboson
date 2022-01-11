@@ -15,7 +15,7 @@ install_github("https://github.com/hsansford1/higgsboson")
 library(higgsboson)
 
 ######################################################
-
+source('./R/useful_functions.R')
 # Useful variables
 
 train <- higgsboson::training
@@ -79,34 +79,6 @@ ggplot(plt, aes(Prediction,Reference, fill= Freq)) +
 #install_github("https://github.com/mlr-org/mlr", force = T)
 library(mlr)
 
-
-# Create measure AMS using makeMeasure() from mlr
-
-AMS_hb = function(truth, response) {
-
-  conf.mat = table(response, truth)
-  conf.mat = conf.mat / sum(conf.mat)
-  s  <- conf.mat[2,2]/(conf.mat[2,2]+conf.mat[1,2]) #TPR - sensitivity
-  b  <- conf.mat[2,1]/(conf.mat[2,1]+conf.mat[1,1])
-
-  AMS_base(s, b)
-
-}
-
-# AMS_weighted was here, deleted as it's moved to useful_functions.R
-
-# Delete? identical to AMS_mlr in useful_functions.R?
-AMS = makeMeasure(
-  id = "AMS_weighted", minimize = FALSE,
-  properties = c("classif"),
-  name = "Approximate median significance",
-  fun = function(task, model, pred, feats, extra.args) {
-    AMS_weighted(pred$data$truth, pred$data$response)
-  }
-)
-
-
-
 # Package mlr allows to use custom metrics (AMS here)
 
 #define task
@@ -124,7 +96,7 @@ logistic.learner <- makeLearner("classif.logreg",
 #cv training
 cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5 ,
                         stratify = FALSE,
-                        measures = AMS,
+                        measures = AMS_mlr,
                         show.info = F)
 cv.logistic$aggr   # If we do it with no weights AMS is larger...
 cv.logistic$measures.test
