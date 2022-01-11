@@ -4,3 +4,5 @@
 \BOOKMARK [1][-]{section.2}{Problem Formulation}{}% 4
 \BOOKMARK [1][-]{section.3}{Maximising the AMS}{}% 5
 \BOOKMARK [2][-]{subsection.3.1}{Two-stage maximisation}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.2}{Logistic regression}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.3}{Generalising logistic regression's decision function}{section.3}% 8
