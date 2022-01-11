@@ -140,29 +140,14 @@ Valid  <- df_train[-trainIndex,]
 
 
 #Logistic regression on Train: CV and sensitivity as metric
-N_s <- sum(weights[df_train$Label == 1])
-N_b <- sum(weights[df_train$Label == 0])
 
-weights_Train <- weights[trainIndex]
-weights_Valid <- weights[-trainIndex]
+weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+weights_Valid <- reweight(weights[-trainIndex], Valid$Label, N_s, N_b)
 
-# # Delete?? Already in useful_functions
-# # function for reweighting
-# reweight <- function(weights, labels, N_s, N_b){
-#   new_weights <- weights
-#   new_weights[labels == 1] <- weights[labels == 1] * N_s / sum(weights[labels == 1])
-#   new_weights[labels == 0] <- weights[labels == 0] * N_b / sum(weights[labels == 0])
-#   return(new_weights)
-# }
-
-weights_Train <- reweight(weights_Train, Train$Label, N_s, N_b)
-weights_Valid <- reweight(weights_Valid, Valid$Label, N_s, N_b)
-
-train_control <- trainControl(method = "cv", number = 10)
+#train_control <- trainControl(method = "cv", number = 10)
 
 logreg_weighted <- caret::train(Label ~ .,
                        data = Train,
-                       trControl = train_control,
                        method = "glm",
                        metric="sensitivity",
                        weights = weights_Train,
@@ -176,32 +161,7 @@ TPR <- cm$table[2,2]/(cm$table[2,2]+cm$table[1,2]) #TPR - sensitivity
 FPR <- cm$table[2,1]/(cm$table[2,1]+cm$table[1,1])
 TPR
 
-
 # sensitivity is very low: change threshold. How? Maximising AMS on Valid
-
-#Function which, given a (general) fitted model and validation data, finds AMS for
-#some value of theta. Useful for plotting and finding the maximum.
-
-AMS <- function(f, valid_set, valid_y, valid_weights){
-
-  AMS_theta <- function(theta){
-
-             probabilities <- predict(f$finalModel,valid_set, type = "response")
-             #mean(probabilities)
-
-             predicted.classes <- ifelse(probabilities > theta, 1, 0)
-             Label_valid <-  as.array(unlist(valid_y))
-             #levels(Label_valid)
-             Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
-
-             s <- sum(weights_Valid[(Label_valid == 1) & (predicted.classes == 1)])
-             b <- sum(weights_Valid[(Label_valid == 0) & (predicted.classes == 1)])
-
-             sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
-
-         }
-
-     }
 
 #Plot AMS for small values of threshold theta
 
@@ -244,7 +204,6 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
   theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
   AMS_vals <- matrix(0, nrow=n, ncol=k)
 
-  validFolds <- createFolds(label, k)
   for (i in 1:k){
 
     trainIndex <- createDataPartition(label, p = .8, list = FALSE, times = 1)
@@ -267,9 +226,11 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
     AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted, Valid[,-length(Valid)], Valid$Label, Valid_weights))
   }
   AMS_vals <- apply(AMS_vals, 1, mean)
+  plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19)
   max_theta <- theta_vals[which.max(AMS_vals),1]
   max_AMS <- AMS_vals[which.max(AMS_vals)]
   return(c(max_theta=max_theta, max_AMS=max_AMS, AMS_vals=AMS_vals))
 }
 
-theta_CV <- threshold_CV(df_train[,1:30], df_train$Label, weights, theta_0=0.0001, theta_1=0.02)
+theta_CV <- threshold_CV(df_train[,1:30], df_train$Label, weights, theta_0=0.0001, theta_1=0.02, k=1)
+theta_CV
