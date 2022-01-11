@@ -1,9 +1,9 @@
-# library(tidyverse)
+library(tidyverse)
 # library(reshape2)
 # library(ggplot2)
 # library(glmnet)
 # library(ROCR)
-# library(caret)
+library(caret)
 # library(cvms)
 # library(tibble)
 # library(pROC)
@@ -11,9 +11,6 @@
 # library(BBmisc)
 # library(testit)
 # library(devtools)
-
-library(tidyverse)
-library(caret)
 
 # ---- load training data ----
 
@@ -60,14 +57,9 @@ N_s <- sum(weights[df_train$Label == 1])
 N_b <- sum(weights[df_train$Label == 0])
 weights_Train <- weights[trainIndex]
 weights_Valid <- weights[-trainIndex]
-reweight <- function(weights, labels, N_s, N_b){
-  new_weights <- weights
-  new_weights[labels == 1] <- weights[labels == 1] * N_s / sum(weights[labels == 1])
-  new_weights[labels == 0] <- weights[labels == 0] * N_b / sum(weights[labels == 0])
-  return(new_weights)
-}
-weights_Train <- reweight(weights_Train, Train$Label, N_s, N_b)
-weights_Valid <- reweight(weights_Valid, Valid$Label, N_s, N_b)
+
+weights_Train <- reweight(weights_Train, Train$Label)
+weights_Valid <- reweight(weights_Valid, Valid$Label)
 
 # Try and find a model! ---------------------------------------------------
 
@@ -76,11 +68,14 @@ nrows <- 50000
 Train <- slice_head(Train, n=nrows)
 weights_Train <- weights_Train[1:nrows]
 
+# NB: with regularisation, might make sense to include interaction terms
+#     e.g. Label ~ .^2 (all pairwise interactions), since regularising should
+#     stop overfitting (especially with alpha=1, where many coefficients -> 0)
+
 # Strategy 1: train without changing threshold ----------------------------
 #             model trained without AMS,
 #             then threshold chosen to maximise AMS on validation set
 
-# train model:
 train_control1 <- trainControl(method = 'cv',
                               number = 3,
                               summaryFunction = twoClassSummary,
@@ -105,6 +100,7 @@ sum(caret_glmnet1$pred$pred == 's')
 # playing with summaryFunction/metric doesn't seem to help
 
 # Haven't tried tuning theta (decision rule threshold) with AMS Valid set yet
+# Use caret::thresholder?
 
 # Strategy 2: train with AMS ---------------------------------------------------
 
@@ -191,4 +187,14 @@ caret_glmnet2.5 <- caret::train(Label ~ .,
 # I'll have a go at implementing this for our case:
 # https://topepo.github.io/caret/using-your-own-model-in-train.html#illustrative-example-5-optimizing-probability-thresholds-for-class-imbalances
 
+# Play with new AMS functions
 
+load('./data/test.RData')
+test$reweighted <- reweight2(test$Weight, test$Label) # reweight using new function
+
+probs <- predict(caret_glmnet1, newdata=test, type='prob')
+test$predictions <- if_else(probs$s > 0.001, 's', 'b')
+AMS_weighted_gen(test$Label, test$predictions, test$Weight) # no reweighted, AMS=0.9
+AMS_weighted_gen(test$Label, test$predictions, test$reweighted) # reweighted, AMS=1.1
+
+AMS_weighted_gen()

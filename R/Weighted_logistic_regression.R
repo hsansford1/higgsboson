@@ -11,7 +11,7 @@ library(checkmate)
 library(BBmisc)
 library(testit)
 library(devtools)
-#install_github("https://github.com/hsansford1/higgsboson")
+install_github("https://github.com/hsansford1/higgsboson")
 library(higgsboson)
 
 ######################################################
@@ -89,20 +89,13 @@ AMS_hb = function(truth, response) {
   s  <- conf.mat[2,2]/(conf.mat[2,2]+conf.mat[1,2]) #TPR - sensitivity
   b  <- conf.mat[2,1]/(conf.mat[2,1]+conf.mat[1,1])
 
-  sqrt(2*((s+b+10)*log(1+s/(b+10))-s)) #calculate AMS
+  AMS_base(s, b)
 
 }
 
-AMS_weighted = function(truth, response) {
+# AMS_weighted was here, deleted as it's moved to useful_functions.R
 
-  s <- sum(weights[(truth == 1) & (response == 1)])
-  b <- sum(weights[(truth == 0) & (response == 1)])
-
-  sqrt(2*((s+b+10)*log(1+s/(b+10))-s)) #calculate AMS
-
-}
-
-
+# Delete? identical to AMS_mlr in useful_functions.R?
 AMS = makeMeasure(
   id = "AMS_weighted", minimize = FALSE,
   properties = c("classif"),
@@ -146,12 +139,13 @@ pred <- predict(fmodel, trainTask)
 truth <- pred$data$truth
 response <- pred$data$response
 
+# Replace with call to AMS_weighted instead? XXX
 s <- sum(weights[(truth == 1) & (response == 1)])
 b <- sum(weights[(truth == 0) & (response == 1)])
 
 AMS <- sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
 AMS
-
+# XXX
 
 #####################################################################
 
@@ -178,13 +172,14 @@ N_b <- sum(weights[df_train$Label == 0])
 weights_Train <- weights[trainIndex]
 weights_Valid <- weights[-trainIndex]
 
-# function for reweighting
-reweight <- function(weights, labels, N_s, N_b){
-  new_weights <- weights
-  new_weights[labels == 1] <- weights[labels == 1] * N_s / sum(weights[labels == 1])
-  new_weights[labels == 0] <- weights[labels == 0] * N_b / sum(weights[labels == 0])
-  return(new_weights)
-}
+# # Delete?? Already in useful_functions
+# # function for reweighting
+# reweight <- function(weights, labels, N_s, N_b){
+#   new_weights <- weights
+#   new_weights[labels == 1] <- weights[labels == 1] * N_s / sum(weights[labels == 1])
+#   new_weights[labels == 0] <- weights[labels == 0] * N_b / sum(weights[labels == 0])
+#   return(new_weights)
+# }
 
 weights_Train <- reweight(weights_Train, Train$Label, N_s, N_b)
 weights_Valid <- reweight(weights_Valid, Valid$Label, N_s, N_b)
@@ -270,7 +265,6 @@ max_AMS
 
 # Cross-Validation function for choosing threshold
 
-
 threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
   N_s <- sum(weights[label == 1])
@@ -285,11 +279,11 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
     Train <- df[-validFolds[[i]],]
     Train$Label <- label[-validFolds[[i]]]
-    Train_weights <- reweight(weights[-validFolds[[i]]], Train$Label, N_s, N_b)
+    Train_weights <- reweight(weights[-validFolds[[i]]], Train$Label, N_s=N_s, N_b=N_b)
 
     Valid  <- df_train[validFolds[[i]],]
     Valid$Label <- label[validFolds[[i]]]
-    Valid_weights <- reweight(weights[validFolds[[i]]], Valid$Label, N_s, N_b)
+    Valid_weights <- reweight(weights[validFolds[[i]]], Valid$Label, N_s=N_s, N_b=N_b)
 
     logreg_weighted <- caret::train(Label ~ .,
                                   data = Train,
