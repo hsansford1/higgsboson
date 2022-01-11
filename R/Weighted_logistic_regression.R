@@ -13,6 +13,7 @@ library(testit)
 library(devtools)
 install_github("https://github.com/hsansford1/higgsboson")
 library(higgsboson)
+library(mlr)
 
 ######################################################
 source('./R/useful_functions.R')
@@ -23,11 +24,8 @@ train <- higgsboson::training
 df_train <- train[,2:33] #remove eventid
 df_train <- df_train[,-31] #remove weights
 
-
-df_train$Label=ifelse(df_train$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) for logistic regresion
-
-label_factor=as.factor(df_train$Label)
-df_train["Label"]=label_factor #need this as factor for caret
+df_train$Label <- ifelse(df_train$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) for logistic regresion
+df_train$Label <- as.factor(df_train$Label) #need this as factor for caret
 
 weights <- reweight(train$Weight, df_train$Label, Ns(), Nb()) # extract weights
 
@@ -130,9 +128,7 @@ AMS
 
 #create the validation set (caret). This should preserve the overall class distribution of the data
 
-trainIndex <- createDataPartition(df_train$Label, p = .8,
-                                  list = FALSE,
-                                  times = 1)
+trainIndex <- createDataPartition(df_train$Label, p = .8, list = FALSE, times = 1)
 head(trainIndex)
 
 Train <- df_train[ trainIndex,]
@@ -143,6 +139,7 @@ Valid  <- df_train[-trainIndex,]
 
 weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
 weights_Valid <- reweight(weights[-trainIndex], Valid$Label, N_s, N_b)
+
 
 #train_control <- trainControl(method = "cv", number = 10)
 
@@ -166,7 +163,7 @@ TPR
 #Plot AMS for small values of threshold theta
 
 theta_vals <- as.data.frame(seq(0.0001, 0.05, length.out=500)) # generate small sample thresholds theta
-AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31], weights_Valid)) #compute AMS(theta)
+AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted2,Valid[,1:30],Valid[31], weights_Valid)) #compute AMS(theta)
 plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
 
 max_theta <- theta_vals[which.max(AMS_vals),1]
@@ -199,39 +196,37 @@ max_AMS
 
 # Cross-Validation function for choosing threshold
 
-threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
+threshold_CV <- function(df_train, weights, theta_0, theta_1, k=5, n=50){
 
-  theta_vals <- as.data.frame(seq(0.0001, 0.05, length.out=n))
+  theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
   AMS_vals <- matrix(0, nrow=n, ncol=k)
 
   for (i in 1:k){
 
-    trainIndex <- createDataPartition(label, p = .8, list = FALSE, times = 1)
+    trainIndex <- createDataPartition(df_train$Label, p = .8, list = FALSE, times = 1)
 
-    Train <- df[trainIndex,]
-    Train$Label <- label[trainIndex]
-    Train_weights <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+    Train <- df_train[ trainIndex,]
+    Valid  <- df_train[-trainIndex,]
 
-    Valid  <- df[-trainIndex,]
-    Valid$Label <- label[-trainIndex]
-    Valid_weights <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
+    weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+    weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
 
-#     logreg_weighted <- caret::train(Label ~ .,
-#                                   data = Train,
-#                                   method = "glm",
-#                                   metric="sensitivity",
-#                                   weights = Train_weights,
-#                                   family=binomial()
-#    )
+    logreg_weighted <- caret::train(Label ~ .,
+                                  data = Train,
+                                  method = "glm",
+                                  metric="sensitivity",
+                                  weights = weights_Train,
+                                  family=binomial()
+   )
 
-   AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted2, Valid[,-length(Valid)], Valid$Label, Valid_weights))
+   AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31], weights_Valid))
   }
   AMS_vals <- apply(AMS_vals, 1, mean)
   plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19)
   max_theta <- theta_vals[which.max(AMS_vals),1]
   max_AMS <- AMS_vals[which.max(AMS_vals)]
-  return(c(max_theta=max_theta, max_AMS=max_AMS, AMS_vals=AMS_vals))
+  return(c(max_theta=max_theta, max_AMS=max_AMS))
 }
 
-theta_CV <- threshold_CV(df_train[,1:30], df_train$Label, weights, theta_0=0.0001, theta_1=0.02, k=1)
+theta_CV <- threshold_CV(df_train, weights, theta_0=0.0001, theta_1=0.02)
 theta_CV

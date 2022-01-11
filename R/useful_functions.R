@@ -51,8 +51,8 @@ AMS <- function(f, valid_set, valid_y, valid_weights){
     #levels(Label_valid)
     Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
 
-    s <- sum(weights_Valid[(Label_valid == 1) & (predicted.classes == 1)])
-    b <- sum(weights_Valid[(Label_valid == 0) & (predicted.classes == 1)])
+    s <- sum(valid_weights[(Label_valid == 1) & (predicted.classes == 1)])
+    b <- sum(valid_weights[(Label_valid == 0) & (predicted.classes == 1)])
 
     return(AMS_base(s, b))
 
