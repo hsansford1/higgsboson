@@ -15,6 +15,9 @@
 \usepackage{tabularx}
 \usepackage{float}
 
+\newcommand{\w}{\mathbf{w}}
+\newcommand{\x}{\mathbf{x}}
+
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -154,6 +157,54 @@ Training $f$ by minimising a logistic loss is particularly suited for a classifi
 \end{remark}
 \begin{remark}
 As far as logistic regression is concerned, recall that after model's coefficients $\bm{w}$ have been estimated, classification for a new observation $y_0$ can be done by setting  $\hat{\bm{w}}'\bm{x}_0>\theta$ for some suitable $\theta \in \mathbb{R}$. In a "proper" logistic regression, $\theta$ is directly set to $0$. Here we choose it during a second stage via maximising AMS.
+\end{remark}
+
+\subsection{Logistic regression}
+
+
+Suppose $y\in \{-1,1\}$. Note that
+\begin{align}
+p(y=1|\x)&=\frac{p(\x|y=1)p(y=1)}{p(\x|y=1)p(y=1)+p(\x|y=-1)p(y=-1))} = \frac{1}{1+\frac{p(\x|y=-1)p(y=-1)}{p(\x|y=1)p(y=1)}}
+\end{align}
+Logistic regression is a discriminative learning model which aims at minimising an expected loss by predicting 
+$$\hat{y}=\operatorname{argmin}_{y_0}\mathbb{E}_{p(y|\x)}(L(y,y_0)|\x)$$
+and by \textit{inferring $p(y|\x)$ directly}. \\
+
+
+Specifically, it models the log density ratio as 
+
+$$\log\Big(\frac{p(\x|y=-1)p(y=-1)}{p(\x|y=1)p(y=1)}\Big)\overset{model}{=}f(\x,\w):=\langle \w,\x \rangle+w_0$$ 
+
+i.e. models the "log-odds"  by a linear model (the term on the left of the proportionality symbol is added for intuition). In this way we can write 
+\begin{align}
+p(y|\x;\w)=\sigma(f(\x,\w)y)
+\end{align}
+for a so-called "activation/logistic function" $\sigma(t):=\frac{1}{1+\exp(t)}$.  \\
+ML estimates of $\w$ are computed from the log-likelihood as $$\w_{ML}=\operatorname{argmax}_\w\sum_{i\in D}\log\sigma(f(\x_i,\w)y_i)$$
+
+\subsection{Generalising logistic regression's decision function}
+\label{app:decision function}
+
+After ML estimates $\hat{\w}$ have been computed, classification of an observation $\x_0$ can be based on whether $p(y=1|\x;\w)$ is bigger than $p(y=-1|\x;\w)$. That is,
+\begin{align*}
+\hat{y}_{\x_0}=1 \ \text{if} \ \sigma(f(\x_0,\hat{\w}))>\sigma(-f(\x_0,\hat{\w})) \\
+\text{or, equivalently,} \
+\hat{y}_{\x_0}=1  \ \text{if} \ \log \Big( \frac{\sigma(f(\x_0,\hat{\w}))}{\sigma(-f(\x_0,\hat{\w}))}\Big)>0
+\end{align*} 
+
+We know that $$\log \Big( \frac{\sigma(f(\x_0,\hat{\w}))}{\sigma(-f(\x_0,\hat{\w}))}\Big)\propto \langle\hat{\w},\x_0\rangle+\hat{w}_0$$
+Therefore, classification from standard logistic regression can also be made as follows
+
+\begin{align*}
+\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \langle\hat{\w},\x_0\rangle+\hat{w}_0>0 \  \text{(resp.} <0).
+\end{align*}
+
+\begin{remark}
+The two-stage procedure "generalises" this classification method by admitting that there is a $\theta\in \mathbb{R}$, possibly different from $0$, such that the classification based on 
+\begin{align*}
+\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \langle\hat{\w},\x_0\rangle+\hat{w}_0>\theta \  \text{(resp.} <\theta).
+\end{align*}
+could be "better" (for some purposes) than the standard logistic regression one. 
 \end{remark}
 
 
