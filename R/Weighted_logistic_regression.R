@@ -29,9 +29,11 @@ df_train$Label=ifelse(df_train$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (res
 label_factor=as.factor(df_train$Label)
 df_train["Label"]=label_factor #need this as factor for caret
 
-weights <- train$Weight # extract weights
+weights <- reweight(train$Weight, df_train$Label, Ns(), Nb()) # extract weights
 
-
+# add a test in for weights?
+all.equal(sum(weights[df_train$Label == 1]), Ns())
+all.equal(sum(weights[df_train$Label == 0]), Nb())
 
 ######################################################################
 
