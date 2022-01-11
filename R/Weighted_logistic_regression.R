@@ -146,7 +146,7 @@ weights_Valid <- reweight(weights[-trainIndex], Valid$Label, N_s, N_b)
 
 #train_control <- trainControl(method = "cv", number = 10)
 
-logreg_weighted <- caret::train(Label ~ .,
+logreg_weighted2 <- caret::train(Label ~ .,
                        data = Train,
                        method = "glm",
                        metric="sensitivity",
@@ -201,7 +201,7 @@ max_AMS
 
 threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
-  theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
+  theta_vals <- as.data.frame(seq(0.0001, 0.05, length.out=n))
   AMS_vals <- matrix(0, nrow=n, ncol=k)
 
   for (i in 1:k){
@@ -212,18 +212,19 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
     Train$Label <- label[trainIndex]
     Train_weights <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
 
-    Valid  <- df_train[-trainIndex,]
+    Valid  <- df[-trainIndex,]
     Valid$Label <- label[-trainIndex]
     Valid_weights <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
 
-    logreg_weighted <- caret::train(Label ~ .,
-                                  data = Train,
-                                  method = "glm",
-                                  metric="sensitivity",
-                                  weights = Train_weights,
-                                  family=binomial()
-    )
-    AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted, Valid[,-length(Valid)], Valid$Label, Valid_weights))
+#     logreg_weighted <- caret::train(Label ~ .,
+#                                   data = Train,
+#                                   method = "glm",
+#                                   metric="sensitivity",
+#                                   weights = Train_weights,
+#                                   family=binomial()
+#    )
+
+   AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted2, Valid[,-length(Valid)], Valid$Label, Valid_weights))
   }
   AMS_vals <- apply(AMS_vals, 1, mean)
   plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19)
