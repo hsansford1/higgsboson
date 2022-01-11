@@ -241,27 +241,24 @@ max_AMS
 
 threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
-  N_s <- sum(weights[label == 1])
-  N_b <- sum(weights[label == 0])
-
-  train_control <- trainControl(method = "cv", number = 2)
   theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
   AMS_vals <- matrix(0, nrow=n, ncol=k)
 
   validFolds <- createFolds(label, k)
   for (i in 1:k){
 
-    Train <- df[-validFolds[[i]],]
-    Train$Label <- label[-validFolds[[i]]]
-    Train_weights <- reweight(weights[-validFolds[[i]]], Train$Label, N_s=N_s, N_b=N_b)
+    trainIndex <- createDataPartition(label, p = .8, list = FALSE, times = 1)
 
-    Valid  <- df_train[validFolds[[i]],]
-    Valid$Label <- label[validFolds[[i]]]
-    Valid_weights <- reweight(weights[validFolds[[i]]], Valid$Label, N_s=N_s, N_b=N_b)
+    Train <- df[trainIndex,]
+    Train$Label <- label[trainIndex]
+    Train_weights <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+
+    Valid  <- df_train[-trainIndex,]
+    Valid$Label <- label[-trainIndex]
+    Valid_weights <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
 
     logreg_weighted <- caret::train(Label ~ .,
                                   data = Train,
-                                  trControl = train_control,
                                   method = "glm",
                                   metric="sensitivity",
                                   weights = Train_weights,
