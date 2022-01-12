@@ -197,7 +197,7 @@ max_AMS
 
 # Cross-Validation function for choosing threshold
 
-threshold_CV <- function(df_train, weights, theta_0, theta_1, k=5, n=50){
+threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
   theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
   AMS_vals <- matrix(0, nrow=n, ncol=k)
@@ -206,8 +206,10 @@ threshold_CV <- function(df_train, weights, theta_0, theta_1, k=5, n=50){
 
     trainIndex <- createDataPartition(df_train$Label, p = .8, list = FALSE, times = 1)
 
-    Train <- df_train[ trainIndex,]
-    Valid  <- df_train[-trainIndex,]
+    Train <- df[ trainIndex,]
+    Train$Label <- label[trainIndex]
+    Valid  <- df[-trainIndex,]
+    Valid$Label <- label[-trainIndex]
 
     weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
     weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
@@ -229,5 +231,5 @@ threshold_CV <- function(df_train, weights, theta_0, theta_1, k=5, n=50){
   return(c(max_theta=max_theta, max_AMS=max_AMS))
 }
 
-theta_CV <- threshold_CV(df_train, weights, theta_0=0.0001, theta_1=0.02)
+theta_CV <- threshold_CV(df_train[1:30], df_train$Label, weights, theta_0=0.0001, theta_1=0.02, k=1)
 theta_CV

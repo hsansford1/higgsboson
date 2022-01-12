@@ -65,40 +65,38 @@ AMS <- function(f, valid_set, valid_y, valid_weights){
 
 # CV for stage 2
 
-threshold_CV <- function(df, label, weights, theta_0, theta_1, k, n=50){
+threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
-  N_s <- Ns()
-  N_b <- Nb()
-
-  train_control <- trainControl(method = "cv", number = 2)
   theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
   AMS_vals <- matrix(0, nrow=n, ncol=k)
 
-  validFolds <- createFolds(label, k)
   for (i in 1:k){
 
-    Train <- df[-validFolds[[i]],]
-    Train$Label <- label[-validFolds[[i]]]
-    Train_weights <- reweight(weights[-validFolds[[i]]], Train$Label, N_s=N_s, N_b=N_b)
+    trainIndex <- createDataPartition(df_train$Label, p = .8, list = FALSE, times = 1)
 
-    Valid  <- df_train[validFolds[[i]],]
-    Valid$Label <- label[validFolds[[i]]]
-    Valid_weights <- reweight(weights[validFolds[[i]]], Valid$Label, N_s=N_s, N_b=N_b)
+    Train <- df[ trainIndex,]
+    Train$Label <- label[trainIndex]
+    Valid  <- df[-trainIndex,]
+    Valid$Label <- label[-trainIndex]
+
+    weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+    weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
 
     logreg_weighted <- caret::train(Label ~ .,
                                     data = Train,
-                                    trControl = train_control,
                                     method = "glm",
                                     metric="sensitivity",
-                                    weights = Train_weights,
+                                    weights = weights_Train,
                                     family=binomial()
     )
-    AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted, Valid[,1:30], Valid$Label, Valid_weights))
+
+    AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31], weights_Valid))
   }
   AMS_vals <- apply(AMS_vals, 1, mean)
+  plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19)
   max_theta <- theta_vals[which.max(AMS_vals),1]
   max_AMS <- AMS_vals[which.max(AMS_vals)]
-  return(c(max_theta=max_theta, max_AMS=max_AMS, AMS_vals=AMS_vals))
+  return(c(max_theta=max_theta, max_AMS=max_AMS))
 }
 
 #---------------------------------------------------------------------
