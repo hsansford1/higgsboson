@@ -1,16 +1,28 @@
-# Hardcode Ns, Nb as functions returning the desired values
-# (see train_test_split.R for explanation)
+
+#' Hardcoded N_s
+#' @description Hardcoded N_s for the higgsboson data.
+#' @return Desired sum of weights corresponding to data points with labels equal to 1.
+#' @export
 Ns <- function(){return(691.988607711987)}
+
+#' Hardcoded N_b
+#' @description Hardcoded N_b for the higgsboson data.
+#' @return Desired sum of weights corresponding to data points with labels equal to 0.
+#' @export
 Nb <- function(){return(410999.847321811)}
 
-# function for reweighting
+#' Re-weighting
+#'
+#' @description Re-weighting to preserve the sum of weights in each binary class
+#'
+#' @param weights Input weights (unnormalized).
+#' @param labels Binary labels of the data points corresponding to the input weights (labels should be 0/1).
+#' @param N_s Desired sum of weights corresponding to data points with labels equal to 1.
+#' @param N_b Desired sum of weights corresponding to data points with labels equal to 1.
+#'
+#' @return Normalized weights
+#' @export
 reweight <- function(weights, labels, N_s, N_b){
-
-  # use hardcoded Ns, Nb
-  N_s <- Ns()
-  N_b <- Nb()
-  # if using hardcoded Ns, Nb makes AMS values work,
-  # remove N_s, N_b function arguments later
 
   new_weights <- weights
   new_weights[labels == 1] <- weights[labels == 1] * N_s / sum(weights[labels == 1])
@@ -18,6 +30,14 @@ reweight <- function(weights, labels, N_s, N_b){
   return(new_weights)
 }
 
+#' Approximate Median Significance (AMS) Base Function
+#'
+#' @param s Sum of weights corresponding to true positive data points.
+#' @param b Sum of weights corresponding to false positive data points.
+#' @param b_reg Regularization parameter.
+#'
+#' @return Approximate median significance.
+#' @export
 AMS_base <- function(s, b, b_reg=10){
 
   # Objective function for challenge: approximate median significance
@@ -37,8 +57,17 @@ AMS_base <- function(s, b, b_reg=10){
 
 # AMS for tuning threshold
 
-#Function which, given a (general) fitted model and validation data, finds AMS for
-#some value of theta. Useful for plotting and finding the maximum.
+#' Generate Approximate Median Significance (AMS) function for specified threshold
+#'
+#' @description Generates an AMS function with threshold (`theta`) of a logistic regression model as input.
+#'  Useful for tuning threshold as a second stage to fitting logistic regression model.
+#' @param f Weighted logistic regression model (output of caret::train).
+#' @param valid_set Validation data set for model `f`.
+#' @param valid_y Binary labels of validation data (0/1).
+#' @param valid_weights Weights of validation data.
+#'
+#' @return Function with one input `theta`, that returns AMS of validation set using model `f` with threshold `theta`.
+#' @export
 AMS <- function(f, valid_set, valid_y, valid_weights){
 
   AMS_theta <- function(theta){
@@ -60,11 +89,25 @@ AMS <- function(f, valid_set, valid_y, valid_weights){
 
 }
 
-
-
-
 # CV for stage 2
 
+#' Cross-validation function for tuning threshold in logistic regression.
+#'
+#' @description Function that performs k-fold cross-validation in order to tune the threshold parameter in logistic regression.
+#'  Fits a weighted logistic regression using randomized training/validation split, then find the the threshold parameter that
+#'  maximises the approximate median significance (AMS).
+#' @param df Data-frame to perform cross-validation on.
+#' @param label Binary labels of data points in `df` (0/1).
+#' @param weights Weights of data points in `df`.
+#' @param theta_0 Lower bound of threshold parameter.
+#' @param theta_1 Upper bound of threshold parameter.
+#' @param k Number of cross-validation sets.
+#' @param n Number of values of threshold to check.
+#'
+#' @return `max_theta` is the threshold value that maximizes the AMS and `max_AMS` is the maximum average AMS found across cross-validation sets.
+#' @export
+#'
+#' @examples
 threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
   theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))

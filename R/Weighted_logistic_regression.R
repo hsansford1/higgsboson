@@ -139,7 +139,7 @@ Valid  <- df_train[-trainIndex,]
 #Logistic regression on Train: CV and sensitivity as metric
 
 weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
-weights_Valid <- reweight(weights[-trainIndex], Valid$Label, N_s, N_b)
+weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
 
 
 #train_control <- trainControl(method = "cv", number = 10)
@@ -231,5 +231,8 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
   return(c(max_theta=max_theta, max_AMS=max_AMS))
 }
 
-theta_CV <- threshold_CV(df_train[1:30], df_train$Label, weights, theta_0=0.0001, theta_1=0.02, k=1)
+df_train[df_train==-999] <- 0
+st_train <- as.data.frame(scale(df_train[,1:30]))
+
+theta_CV <- threshold_CV(st_train, df_train$Label, weights, theta_0=0.0001, theta_1=0.02)
 theta_CV
