@@ -35,7 +35,19 @@ all.equal(sum(weights[df_train$Label == 0]), Nb())
 
 ######################################################################
 
+#Missing values (and standardisation)
 
+df_train[df_train==-999] <- 0
+
+#if we want to standardise:
+
+#st_train <- df_train
+#st_train <- as.data.frame(scale(df_train[,1:30])) #standardisation
+#st_train["Label"] <- label_factor
+
+
+
+######################################################################
 #Weighted Logistic regression with common metrics (e.g. sensitivity)
 
 
@@ -233,3 +245,71 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
 theta_CV <- threshold_CV(df_train[1:30], df_train$Label, weights, theta_0=0.0001, theta_1=0.02, k=1)
 theta_CV
+
+
+
+
+#Threshold tuning after PCA-dimensional reduction
+
+st_train_pca <- as.data.frame(scale(df_train[1:30])) # standardise the variables
+train.pca <- prcomp(st_train_pca)
+summary(train.pca)
+screeplot(train.pca, type="lines")
+
+#the first pca has by far the highest variance
+#Let's try to keep the first 3 pca's (they have variance bigger than 2)
+
+st_train_dimred <- data.frame("PCA1"=train.pca$x[,1],"PCA2"=train.pca$x[,2],"PCA3"=train.pca$x[,3])
+st_train_dimred["Label"] <- as.factor(df_train$Label)
+
+
+trainIndex <- createDataPartition(st_train_dimred$Label, p = .8,
+                                  list = FALSE,
+                                  times = 1)
+head(trainIndex)
+
+Train <- st_train_dimred[ trainIndex,]
+Valid  <- st_train_dimred[-trainIndex,]
+
+
+#First stage: Logistic regression on Train: CV and sensitivity as metric
+
+weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+weights_Valid <- reweight(weights[-trainIndex], Valid$Label, N_s, N_b)
+
+
+#train_control <- trainControl(method = "cv", number = 10)
+
+logreg_weighted_pca <- caret::train(Label ~ .,
+                                    data = Train,
+                                    method = "glm",
+                                    #metric="sensitivity",
+                                    weights = weights_Train,
+                                    family=binomial()
+)
+
+
+
+
+print(logreg_weighted_pca)
+cm <- confusionMatrix(logreg_weighted_pca)
+TPR <- cm$table[2,2]/(cm$table[2,2]+cm$table[1,2]) #TPR - sensitivity
+FPR <- cm$table[2,1]/(cm$table[2,1]+cm$table[1,1])
+TPR
+
+# sensitivity is very low: change threshold. How? Maximising AMS on Valid
+
+#Plot AMS for small values of threshold theta
+
+theta_vals <- as.data.frame(seq(0.0001, 0.05, length.out=500)) # generate small sample thresholds theta
+AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted_pca,Valid[,1:3],Valid[4], weights_Valid)) #compute AMS(theta)
+plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
+
+max_theta <- theta_vals[which.max(AMS_vals),1]
+max_theta
+max_AMS <- AMS_vals[which.max(AMS_vals)]
+max_AMS
+
+
+#theta_CV <- threshold_CV(df_train = st_train_dimred, weights=weights, theta_0=0.0001, theta_1=0.02)
+#theta_CV #does not work for now
