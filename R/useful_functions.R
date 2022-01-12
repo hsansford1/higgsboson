@@ -105,8 +105,9 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k, n=50){
 
 # mlr package: AMS as direct measure
 
-AMS_weighted = function(truth, response) {
+AMS_weighted = function(truth, response, weights) {
 
+  weights <- reweight(weights, truth, Ns(), Nb())
   s <- sum(weights[(truth == 1) & (response == 1)])
   b <- sum(weights[(truth == 0) & (response == 1)])
 
@@ -119,10 +120,9 @@ AMS_weighted_gen = function(truth, response, weights) {
 # more general version of AMS_weighted,
 # takes truth (actual outcome), response (predicted outcome), and weight vector
 # returns AMS
-
+  weights <- reweight(weights, truth, Ns(), Nb())
 # truth & response can be s/b or 1/0
 # both vectors should be same type
-
   if((truth[1] == 's') | (truth[1] == 'b')){
     s <- sum(weights[(truth == 's') & (response == 's')])
     b <- sum(weights[(truth == 'b') & (response == 's')])
@@ -141,7 +141,7 @@ AMS_mlr = makeMeasure(
   properties = c("classif"),
   name = "Approximate median significance",
   fun = function(task, model, pred, feats, extra.args) {
-    AMS_weighted(pred$data$truth, pred$data$response)
+    AMS_weighted(pred$data$truth, pred$data$response, weights)
   }
 )
 

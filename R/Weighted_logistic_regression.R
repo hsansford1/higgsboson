@@ -94,6 +94,7 @@ logistic.learner <- makeLearner("classif.logreg",
                                 predict.type = "response")
 
 #cv training
+AMS_mlr
 cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5 ,
                         stratify = FALSE,
                         measures = AMS_mlr,
@@ -102,7 +103,7 @@ cv.logistic$aggr   # If we do it with no weights AMS is larger...
 cv.logistic$measures.test
 
 #get the trained model
-fmodel <- train(logistic.learner,trainTask)
+fmodel <- mlr::train(logistic.learner,trainTask)
 getLearnerModel(fmodel)
 
 
