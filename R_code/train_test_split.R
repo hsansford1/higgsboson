@@ -42,6 +42,8 @@ training <- filter(data, KaggleSet == 't')
 training <- select(training, -c('KaggleSet', 'KaggleWeight'))
 save(training, file = './data/training.RData')
 
+# REMEMBER TO TRY AMS VALUES FOR TEST DATA WITH KAGGLEWEIGHT!!!
+# (BECAUSE WEIGHTS ARE NOT NORMALISED CORRECTLY)
 test <- filter(data, (KaggleSet == 'b') | (KaggleSet == 'v'))
 test <- select(test, -c('KaggleSet', 'KaggleWeight'))
 save(test, file = './data/test.RData')

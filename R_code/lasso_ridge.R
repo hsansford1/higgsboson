@@ -12,32 +12,36 @@ library(caret)
 # library(testit)
 # library(devtools)
 
+library(higgsboson)
+
 # ---- load training data ----
 
-load('./data/training.RData')
-train <- training
-rm(training)
+train <- higgsboson::training
 
 df_train <- train[,2:33] #remove eventid
 df_train <- df_train[,-31] #remove weights
 
-#df_train$Label=ifelse(df_train$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) for logistic regresion
+df_train$Label <- ifelse(df_train$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) for logistic regresion
+df_train$Label <- as.factor(df_train$Label) #need this as factor for caret
 
-label_factor=as.factor(df_train$Label)
-df_train["Label"]=label_factor #need this as factor for caret
+weights <- reweight(train$Weight, df_train$Label, Ns(), Nb()) # extract weights
 
-weights <- train$Weight # extract weights
+# add a test in for weights?
+all.equal(sum(weights[df_train$Label == 1]), Ns())
+all.equal(sum(weights[df_train$Label == 0]), Nb())
 
 # missing values ----------------------------------------------------------
 
-# # 2. Set missing values (currently -999) to column mean
-# df_train <- df_train %>%
-#   mutate(across( !Label, ~na_if(.,-999) ))
-# colmeans <- df_train %>%
-#   summarise(across( !Label , function(x)mean(x, na.rm=TRUE) ))
-# for(i in 1:30){
-#   df_train[[i]] <- replace_na(df_train[[i]], colmeans[[i]])
-# }
+#Missing values (and standardisation)
+
+df_train[df_train==-999] <- 0
+
+#if we want to standardise:
+
+#st_train <- df_train
+#st_train <- as.data.frame(scale(df_train[,1:30])) #standardisation
+#st_train["Label"] <- label_factor
+
 
 # feature selection -------------------------------------------------------
 
@@ -53,20 +57,19 @@ Train <- df_train[ trainIndex,]
 Valid  <- df_train[-trainIndex,]
 
 # reweight training and validation sets
-N_s <- sum(weights[df_train$Label == 1])
-N_b <- sum(weights[df_train$Label == 0])
 weights_Train <- weights[trainIndex]
 weights_Valid <- weights[-trainIndex]
 
-weights_Train <- reweight(weights_Train, Train$Label)
-weights_Valid <- reweight(weights_Valid, Valid$Label)
+weights_Train <- reweight(weights_Train, Train$Label, Ns(), Nb())
+weights_Valid <- reweight(weights_Valid, Valid$Label, Ns(), Nb())
 
 # Try and find a model! ---------------------------------------------------
 
-# for speed while we're tweaking things
+# # for speed while we're tweaking things
 nrows <- 50000
 Train <- slice_head(Train, n=nrows)
 weights_Train <- weights_Train[1:nrows]
+weights_Train <- reweight(weights_Train, Train$Label, Ns(), Nb())
 
 # NB: with regularisation, might make sense to include interaction terms
 #     e.g. Label ~ .^2 (all pairwise interactions), since regularising should
@@ -76,31 +79,75 @@ weights_Train <- weights_Train[1:nrows]
 #             model trained without AMS,
 #             then threshold chosen to maximise AMS on validation set
 
+# glmnet seems to need Label to be factor w/ levels 's', 'b' (not 0, 1)
+levels(Train$Label)[levels(Train$Label)=="0"] <- "b"
+levels(Train$Label)[levels(Train$Label)=="1"] <- "s"
+
+# try more hyperparameters values!!! (Random search?)
 train_control1 <- trainControl(method = 'cv',
-                              number = 3,
-                              summaryFunction = twoClassSummary,
+                              number = 10,
                               classProbs = TRUE,
                               savePredictions = TRUE,
-                              returnData = TRUE)
+                              returnData = TRUE,
+                              summaryFunction = twoClassSummary)
 
 caret_glmnet1 <- caret::train(Label ~ .,
                               Train,
                               trControl = train_control1,
                               metric = 'Spec',
-                              maximise = TRUE,
                               method = "glmnet",
                               weights = weights_Train
 )
-
-sum(caret_glmnet1$pred$obs == 's')
-sum(caret_glmnet1$pred$pred == 's')
 
 # Almost no 's' are predicted during cv
 # (if ~30000 actual 's' observed, only 5-10 's' predicted)
 # playing with summaryFunction/metric doesn't seem to help
 
-# Haven't tried tuning theta (decision rule threshold) with AMS Valid set yet
-# Use caret::thresholder?
+# Find theta based on Valid set
+
+levels(Valid$Label)[levels(Valid$Label)=="0"] <- "b"
+levels(Valid$Label)[levels(Valid$Label)=="1"] <- "s"
+
+probs <- predict(caret_glmnet1, newdata = Valid, type='prob')
+theta_seq <- seq(0.00001, 0.1, length.out=10000)
+ams_vals <- vector(mode='numeric', length=0)
+for(theta in theta_seq){
+  preds <- if_else(probs$s > theta, 's', 'b')
+  ams_vals <- append(ams_vals, AMS_weighted_gen(Valid$Label, preds, weights_Valid))
+}
+
+plot(theta_seq, ams_vals)
+theta_max <- theta_seq[ams_vals==max(ams_vals)]
+
+# Try this theta on test data:
+# preprocess test data
+test <- higgsboson::test
+
+df_test <- test[,2:33] #remove eventid
+df_test <- df_test[,-31] #remove weights
+df_test$Label <- ifelse(df_test$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) for logistic regresion
+df_test$Label <- as.factor(df_test$Label) #need this as factor for caret
+weights_test <- reweight(test$Weight, df_test$Label, Ns(), Nb()) # extract weights
+all.equal(sum(weights_test[df_test$Label == 1]), Ns())
+all.equal(sum(weights_test[df_test$Label == 0]), Nb())
+df_train[df_train==-999] <- 0
+
+probs_test <- predict(caret_glmnet1, newdata=df_test, type='prob')
+preds_test <- probs_test$s > theta_max
+
+AMS_weighted(df_test$Label, preds_test, weights_test)
+ams_test_vals <- vector(mode='numeric', length=0)
+theta_seq_test <- seq(0.00001, 0.1, length.out=100)
+for(theta in theta_seq_test){
+  preds_test_loop <- if_else(probs_test$s > theta, 1, 0)
+  ams_test_vals <- append(ams_test_vals, AMS_weighted_gen(df_test$Label, preds_test_loop, weights_test))
+}
+
+plot(theta_seq_test, ams_test_vals) # promising!!!
+theta_max <- theta_seq_test[ams_test_vals==max(ams_test_vals)]
+# Strategy 1.5: Train as in strategy 1, but k times, with k-fold CV for theta
+
+# TO DO TOMORROW!!
 
 # Strategy 2: train with AMS ---------------------------------------------------
 
@@ -190,9 +237,9 @@ caret_glmnet2.5 <- caret::train(Label ~ .,
 # Play with new AMS functions
 
 load('./data/test.RData')
-test$reweighted <- reweight2(test$Weight, test$Label) # reweight using new function
+test$reweighted <- reweight(test$Weight, test$Label, Ns(), Nb()) # reweight using new function
 
-probs <- predict(caret_glmnet1, newdata=test, type='prob')
+probs <- predict(caret_glmnet1, newdata=Valid, type='prob')
 test$predictions <- if_else(probs$s > 0.001, 's', 'b')
 AMS_weighted_gen(test$Label, test$predictions, test$Weight) # no reweighted, AMS=0.9
 AMS_weighted_gen(test$Label, test$predictions, test$reweighted) # reweighted, AMS=1.1
