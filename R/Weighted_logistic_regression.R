@@ -103,20 +103,23 @@ trainTask
 
 #make learner
 logistic.learner <- makeLearner("classif.logreg",
-                                predict.type = "response")
+                                predict.type = "response", measures=AMS_mlr)
 
 #cv training
-AMS_mlr
-cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5 ,
-                        stratify = FALSE,
+AMS_mlr <- AMS_measure()
+cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5,
+                        stratify = TRUE,
                         measures = AMS_mlr,
-                        show.info = F)
+                        show.info = F, models=TRUE)
 cv.logistic$aggr   # If we do it with no weights AMS is larger...
 cv.logistic$measures.test
+
+fmodel <- cv.logistic$models[[2]]
 
 #get the trained model
 fmodel <- mlr::train(logistic.learner,trainTask)
 getLearnerModel(fmodel)
+
 
 
 # get s and b using weights
@@ -278,7 +281,7 @@ Valid  <- st_train_dimred[-trainIndex,]
 #First stage: Logistic regression on Train: CV and sensitivity as metric
 
 weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
-weights_Valid <- reweight(weights[-trainIndex], Valid$Label, N_s, N_b)
+weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
 
 
 #train_control <- trainControl(method = "cv", number = 10)
@@ -314,5 +317,5 @@ max_AMS <- AMS_vals[which.max(AMS_vals)]
 max_AMS
 
 
-#theta_CV <- threshold_CV(df_train = st_train_dimred, weights=weights, theta_0=0.0001, theta_1=0.02)
-#theta_CV #does not work for now
+theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.01, k=1)
+theta_CV

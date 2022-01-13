@@ -1,3 +1,4 @@
+library(mlr)
 
 #' Hardcoded N_s
 #' @description Hardcoded N_s for the higgsboson data.
@@ -133,7 +134,7 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
                                     family=binomial()
     )
 
-    AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31], weights_Valid))
+    AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,-length(Valid)],Valid[,length(Valid)], weights_Valid))
   }
   AMS_vals <- apply(AMS_vals, 1, mean)
   plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19)
@@ -144,8 +145,14 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
 
 #---------------------------------------------------------------------
 
-# mlr package: AMS as direct measure
-
+#' Approximate Median Significance (AMS) function using weights of data points
+#'
+#' @param truth The true labels (0/1) of the data points.
+#' @param response The predicted labels (0/1) of the data points.
+#' @param weights The weights of the data points (can be un-normalized)
+#'
+#' @return AMS.
+#' @export
 AMS_weighted = function(truth, response, weights) {
 
   weights <- reweight(weights, truth, Ns(), Nb())
@@ -156,6 +163,7 @@ AMS_weighted = function(truth, response, weights) {
 
 }
 
+# Can we delete this function since I have documented that labels should be 0/1?
 # Think it might be better to document functions that labels should be 0/1 because then our functions are more general for binary problems
 AMS_weighted_gen = function(truth, response, weights) {
 # more general version of AMS_weighted,
@@ -176,13 +184,18 @@ AMS_weighted_gen = function(truth, response, weights) {
 
 }
 
-
-AMS_mlr = makeMeasure(
-  id = "AMS_weighted", minimize = FALSE,
-  properties = c("classif"),
-  name = "Approximate median significance",
-  fun = function(task, model, pred, feats, extra.args) {
-    AMS_weighted(pred$data$truth, pred$data$response, weights)
-  }
-)
+#' Generate AMS measure to be used in mlr training
+#'
+#' @return AMS measure that can be used as a measure in functions in the `mlr` package, e.g. `crossval`
+AMS_measure <- function(){
+  AMS_mlr = makeMeasure(
+    id = "AMS_weighted", minimize = FALSE,
+    properties = c("classif"),
+    name = "Approximate median significance",
+    fun = function(task, model, pred, feats, extra.args) {
+      AMS_weighted(pred$data$truth, pred$data$response, weights)
+    }
+  )
+  return(AMS_mlr)
+}
 
