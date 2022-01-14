@@ -64,214 +64,106 @@ st_train <- as.data.frame(scale(df_train[,1:30]))
 st_train["Label"] <- df_train$Label
 ```
 
-## Weighted Logistic Regression with common metric
-
-First, control the parameters of the `caret::train` function.
-```{r}
-train_control <- trainControl(method = "cv", number = 10)
-```
-Train a logistic regression model using 'sensitivity` as the metric.
-```{r, warning=FALSE}
-model_weights <- train(Label ~ .,
-                       data = df_train,
-                       trControl = train_control,
-                       method = "glm",
-                       metric="sensitivity",
-                       weights = weights,
-                       family=binomial()
-)
-
-print(model_weights)
-```
-Create and plot the confusion matrix
-```{r}
-cm <- confusionMatrix(model_weights)
-TPR <- cm$table[2,2]/(cm$table[2,2]+cm$table[1,2]) #TPR - sensitivity
-FPR <- cm$table[2,1]/(cm$table[2,1]+cm$table[1,1])
-
-plt <- as.data.frame(round(cm$table,1))
-plt$Prediction <- factor(plt$Prediction, levels=rev(levels(plt$Prediction)))
-
-ggplot(plt, aes(Prediction,Reference, fill= Freq)) +
-  geom_tile() + geom_text(aes(label=Freq)) +
-  scale_fill_gradient(low="white", high="#009194") +
-  labs(x = "Prediction",y = "Reference")
-
-```
-## Logistic Regression with custom AMS metric
+## Weighted Logistic Regression with custom AMS metric
 
 The `mlr` package allows the use of custom metrics. First, define the classification task and make the logistic learner
 ```{r, warning=FALSE}
-trainTask <- makeClassifTask(data = df_train,
+trainTask <- makeClassifTask(data = st_train,
                              target = "Label",
                              positive = 1,
                              weights = weights
                              )
 
-logistic.learner <- makeLearner("classif.logreg",
-                                predict.type = "response")
+logistic.learner <- makeLearner("classif.logreg", predict.type = "response")
 ```
-Use the custom AMS measure created in the `higgsboson` package `AMS_measure()` to conduct cross-validation on fitting the logistic regression and return the model that maximises the AMS over the cross-validation sets.
-```{r}
-
-```
-
-
-```{r, eval=FALSE}
-
+Use the custom AMS measure created in the `higgsboson` package `AMS_measure()` to conduct cross-validation on fitting the weighted logistic regression (WLR). This gives us an idea of the AMS we can expect to get from a test set.
+```{r, warning=FALSE}
+set.seed(22)
 AMS_mlr <- AMS_measure()
 cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5,
                         stratify = TRUE,
                         measures = AMS_mlr,
                         show.info = F, models=TRUE)
-cv.logistic$aggr   # If we do it with no weights AMS is larger...
+cv.logistic$aggr      
 cv.logistic$measures.test
 
-fmodel <- cv.logistic$models[[2]]
+```
+Now, we fit a WLR model using the whole trainind data set and check how it performs on the test data.
+```{r}
+train_control <- trainControl(method = "cv", number = 10)
 
-#get the trained model
-fmodel <- mlr::train(logistic.learner,trainTask)
-getLearnerModel(fmodel)
+fmodel <- train(Label ~ .,
+                       data = st_train,
+                       trControl = train_control,
+                       method = "glm",
+                       weights = weights,
+                       family=binomial()
+)
 
+test <- higgsboson::test
 
+df_test <- test[,2:33] #remove eventid
+df_test <- df_test[,-31] #remove weights
+df_test$Label <- ifelse(df_test$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) for logistic regresion
+df_test$Label <- as.factor(df_test$Label) #need this as factor for caret
+# set misssing values to 0 and standardise data
+df_test[df_test==-999] <- 0
+st_test <- as.data.frame(scale(df_test[,1:30]))
+st_test$Label <- df_test$Label
 
-# get s and b using weights
-pred <- predict(fmodel, trainTask)
-truth <- pred$data$truth
-response <- pred$data$response
+weights_test <- reweight(test$Weight, st_test$Label, Ns(), Nb()) # extract weights
 
-# Replace with call to AMS_weighted instead? XXX
-s <- sum(weights[(truth == 1) & (response == 1)])
-b <- sum(weights[(truth == 0) & (response == 1)])
+truth <- st_test$Label
+response <- predict(fmodel, newdata = st_test[,-length(st_test)])
 
-AMS <- sqrt(2*((s+b+10)*log(1+s/(b+10))-s))
-AMS
-#
+AMS_weighted(truth, response, weights_test) 
 
-#####################################################################
+```
+## Two-stage maximisation
 
-# Two-stage maximisation of AMS: Kotlowsky's paper
+Below is the code for conducting the two-stage maximisation of the AMS. 
 
-#Idea: learn a model (e.g. log reg) f
-#calibrate classification threshold theta by maximising \hat(AMS)(theta) on a validation set
+First we create a training/validation split of the training data that preserves the overall class distribution.
 
-#create the validation set (caret). This should preserve the overall class distribution of the data
+```{r}
+trainIndex <- createDataPartition(st_train$Label, p = .8, list = FALSE, times = 1)
 
-trainIndex <- createDataPartition(df_train$Label, p = .8, list = FALSE, times = 1)
-head(trainIndex)
+Train <- st_train[ trainIndex,]
+Valid  <- st_train[-trainIndex,]
+```
 
-Train <- df_train[ trainIndex,]
-Valid  <- df_train[-trainIndex,]
-
-
-#Logistic regression on Train: CV and sensitivity as metric
-
+We then fit a WLR model using the new training set `Train`, before visualising how the AMS varies with threshold `theta`. This informs the users decision of how to set the parameters `theta_0` and `theta_1` in the function `threshold_CV` in the `higgsboson` package. We can see that the peak definitely occurs in the range 0 to 0.1.
+```{r, warning=FALSE}
 weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
 weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
-
-
-#train_control <- trainControl(method = "cv", number = 10)
 
 logreg_weighted2 <- caret::train(Label ~ .,
                        data = Train,
                        method = "glm",
-                       metric="sensitivity",
                        weights = weights_Train,
                        family=binomial()
 )
 
 
-print(logreg_weighted)
-cm <- confusionMatrix(logreg_weighted)
-TPR <- cm$table[2,2]/(cm$table[2,2]+cm$table[1,2]) #TPR - sensitivity
-FPR <- cm$table[2,1]/(cm$table[2,1]+cm$table[1,1])
-TPR
-
-# sensitivity is very low: change threshold. How? Maximising AMS on Valid
-
-#Plot AMS for small values of threshold theta
-
-theta_vals <- as.data.frame(seq(0.0001, 0.02, length.out=500)) # generate small sample thresholds theta
+#Plot AMS for different values of threshold theta
+theta_vals <- as.data.frame(seq(0.0001, 0.5, length.out=500)) # generate small sample thresholds theta
 AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted2,Valid[,1:30],Valid[31], weights_Valid)) #compute AMS(theta)
 plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
 
-max_theta <- theta_vals[which.max(AMS_vals),1]
-max_AMS <- AMS_vals[which.max(AMS_vals)]
-max_AMS
-
-# sensitivity(
-#   data = as.factor(predicted.classes),
-#   reference = as.array(unlist(Valid[,31])),
-#   positive = levels(as.array(unlist(Valid[,31])))[2]
-# )
 
 
-#For the weighted logistic regression, AMS is decreasing with theta, for \theta \in ]0,1[
+```
 
 
 
-# pred_tibble <- tibble("target" = test_pfi,
-#                       "prediction" = predicted.classes)
-# table <- as_tibble(table(pred_tibble))
-#
-# plot_confusion_matrix(table,
-#                       target_col = "target",
-#                       prediction_col = "prediction",
-#                       counts_col = "n")
+```{r}
 
-
-
-#####################################################################################
-
-# Cross-Validation function for choosing threshold
-
-threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
-
-  theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
-  max_thetas <- rep(0,k)
-  AMS_vals <- matrix(0, nrow=n, ncol=k)
-
-  for (i in 1:k){
-
-    trainIndex <- createDataPartition(df_train$Label, p = .8, list = FALSE, times = 1)
-
-    Train <- df[ trainIndex,]
-    Train$Label <- label[trainIndex]
-    Valid  <- df[-trainIndex,]
-    Valid$Label <- label[-trainIndex]
-
-    weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
-    weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
-
-    logreg_weighted <- caret::train(Label ~ .,
-                                  data = Train,
-                                  method = "glm",
-                                  metric="sensitivity",
-                                  weights = weights_Train,
-                                  family=binomial()
-   )
-
-   AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31], weights_Valid))
-   max_thetas[i] <- theta_vals[which.max(AMS_vals[,i]),1]
-  }
-  AMS_mean <- apply(AMS_vals, 1, mean)
-  AMS_sd <- apply(AMS_vals, 1, sd)
-  plot(as.array(unlist(theta_vals)), AMS_mean, xlab="theta", ylab="AMS(theta)", pch=19)
-  lines(as.array(unlist(theta_vals)), AMS_mean + mean(AMS_sd), col='red')
-  lines(as.array(unlist(theta_vals)), AMS_mean - mean(AMS_sd), col='red')
-  max_theta <- theta_vals[which.max(AMS_mean),1]
-  max_AMS <- AMS_mean[which.max(AMS_mean)]
-  return(list('max_theta'=max_theta, 'max_AMS'=max_AMS, 'AMS_sd'=AMS_sd, 'max_thetas'=max_thetas))
-}
-
-df_train[df_train==-999] <- 0
-st_train <- as.data.frame(scale(df_train[,1:30]))
-
-theta_CV <- threshold_CV(st_train, df_train$Label, weights, theta_0=0.0001, theta_1=0.02)
+theta_CV <- threshold_CV(st_train, df_train$Label, weights, theta_0=0.0001, theta_1=0.1)
 theta_CV
 
 
 
+#######################################################################
 
 #Threshold tuning after PCA-dimensional reduction
 
@@ -321,7 +213,6 @@ TPR <- cm$table[2,2]/(cm$table[2,2]+cm$table[1,2]) #TPR - sensitivity
 FPR <- cm$table[2,1]/(cm$table[2,1]+cm$table[1,1])
 TPR
 
-# sensitivity is very low: change threshold. How? Maximising AMS on Valid
 
 #Plot AMS for small values of threshold theta
 
@@ -334,9 +225,11 @@ max_theta
 max_AMS <- AMS_vals[which.max(AMS_vals)]
 max_AMS
 
+# Choose the threshold
 
-theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.01, k=1)
-theta_CV
+theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.006, k=5, n=200)
+theta_CV  #less variance, both of theta and of AMS
+
 
 ```
 

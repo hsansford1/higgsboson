@@ -109,9 +109,10 @@ AMS <- function(f, valid_set, valid_y, valid_weights){
 #' @export
 #'
 #' @examples
-threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
+threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=200){
 
   theta_vals <- as.data.frame(seq(theta_0, theta_1, length.out=n))
+  max_thetas <- rep(0,k)
   AMS_vals <- matrix(0, nrow=n, ncol=k)
 
   for (i in 1:k){
@@ -129,18 +130,22 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=50){
     logreg_weighted <- caret::train(Label ~ .,
                                     data = Train,
                                     method = "glm",
-                                    metric="sensitivity",
+                                    # metric="sensitivity",
                                     weights = weights_Train,
                                     family=binomial()
     )
 
-    AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,-length(Valid)],Valid[,length(Valid)], weights_Valid))
+    AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,-length(Valid)],Valid[length(Valid)], weights_Valid))
+    max_thetas[i] <- theta_vals[which.max(AMS_vals[,i]),1]
   }
-  AMS_vals <- apply(AMS_vals, 1, mean)
-  plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19)
-  max_theta <- theta_vals[which.max(AMS_vals),1]
-  max_AMS <- AMS_vals[which.max(AMS_vals)]
-  return(c(max_theta=max_theta, max_AMS=max_AMS))
+  AMS_mean <- apply(AMS_vals, 1, mean)
+  AMS_sd <- apply(AMS_vals, 1, sd)
+  plot(as.array(unlist(theta_vals)), AMS_mean, xlab="theta", ylab="AMS(theta)", pch=19)
+  lines(as.array(unlist(theta_vals)), AMS_mean + mean(AMS_sd), col='red')
+  lines(as.array(unlist(theta_vals)), AMS_mean - mean(AMS_sd), col='red')
+  max_theta <- theta_vals[which.max(AMS_mean),1]
+  max_AMS <- AMS_mean[which.max(AMS_mean)]
+  return(list('max_theta'=max_theta, 'max_AMS'=max_AMS, 'AMS_sd'=AMS_sd, 'max_thetas'=max_thetas))
 }
 
 #---------------------------------------------------------------------
