@@ -224,7 +224,10 @@ could be "better" (for some purposes) than the standard logistic regression one.
 
 \subsection{AMS as direct measure - Cross Validation}
 
-As first attempt, a standard (i.e., $\theta=0.5$) logistic regression has been fitted on the train set. Cross validation suggested that if we tune the coefficients of the model in order to directly maximise AMS, then we cannot get a value of AMS bigger than $0.3$. This is a quite small value - as one may also understand by results in next sections. Many attempts get a value of AMS bigger than that even on the test set. This suggests that \textit{directly} tuning \textit{the coefficients} of a standard logistic regression on the basis of AMS is not a good strategy.
+As first attempt, a standard (i.e., $\theta=0.5$) weighted logistic regression (WLR) has been fitted on the train set. Cross validation suggested that we can expect to get an AMS in the range [0.15, 0.41] on a test set. This is a relatively small value compared to results in following sections. Many attempts result in a AMS value larger than the upper bound found in cross-validation on test sets.
+% Do you mean attempts using other model fitting strategies or the same strategt?%
+
+Using the entire set of training data to fit the WLR model, we get an AMS value of 0.18 on the test data set.
 
 \subsection{Two-stage maximisation}
 
