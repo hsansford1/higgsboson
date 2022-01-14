@@ -24,7 +24,7 @@
 \newtheorem{remark}[theorem]{Remark} 
 
 %opening
-\title{Higgs Boson Machine Learning Project}
+\title{Tuning of logistic regression for Higgsboson ML challenge}
 \author{Ettore Fincato, Hannah Sansford, Harry Tata}
 
 \begin{document}
@@ -97,7 +97,7 @@ to optimise the selection region for discovery significance, where $b_\text{reg}
 
 \section{Maximising the AMS}
 
-Having decided a statistical model for classification, its parameters will be tuned by maximising the AMS. This will be done in two ways.
+Having decided a statistical model for classification, its parameters will be tuned by maximising the AMS. This can be done in two ways.
 
 \begin{itemize}
 \item \textbf{Direct maximisation}: One can consider the AMS as an error/objective measure in a cross validation procedure. So the model will be tuned by a cross validation (cv) procedure by looking at the coefficients which directly maximise the AMS.
@@ -109,6 +109,7 @@ h(\theta):=\operatorname{sgn}(f-\theta)\in \{-1,1\}
 \end{equation}
 One can therefore train and tune $f$ ``independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. For example, one could train $f$ in a logistic regression (i.e. train $f$ s.t. it minimises a logistic loss), and then, on a second stage, choose the classification threshold based on AMS. This approach is presented in \cite{kotlowski2014consistent}
 \end{itemize}
+We will see that the two-stage maximisation is much more performant (in terms of AMS) than the direct one.
 
 \subsection{Two-stage maximisation}
 
@@ -158,6 +159,8 @@ Training $f$ by minimising a logistic loss is particularly suited for a classifi
 \begin{remark}
 As far as logistic regression is concerned, recall that after model's coefficients $\bm{w}$ have been estimated, classification for a new observation $y_0$ can be done by setting  $\hat{\bm{w}}'\bm{x}_0>\theta$ for some suitable $\theta \in \mathbb{R}$. In a "proper" logistic regression, $\theta$ is directly set to $0$. Here we choose it during a second stage via maximising AMS.
 \end{remark}
+
+Our aim is to tune a logistic regression. The theoretical set-up of logistic regression can be found below.
 
 \subsection{Logistic regression}
 
@@ -209,6 +212,16 @@ The two-stage procedure "generalises" this classification method by admitting th
 could be "better" (for some purposes) than the standard logistic regression one. 
 \end{remark}
 
+
+\section{Model fitting}
+
+\subsection{AMS as direct measure - Cross Validation}
+
+\subsection{Two-stage maximisation}
+\subsubsection{First stage}
+\subsubsection{Tuning of threshold theta}
+
+\section{Performance on test set}
 
 \bibliographystyle{plain}
 \bibliography{refs}

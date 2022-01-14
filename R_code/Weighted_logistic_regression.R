@@ -124,7 +124,7 @@ Train <- st_train[ trainIndex,]
 Valid  <- st_train[-trainIndex,]
 
 
-#Logistic regression on Train: CV and sensitivity as metric
+#Logistic regression on Train: this suggests the range of theta_0,theta_1 in theta_CV
 
 weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
 weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
@@ -135,7 +135,7 @@ weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
 logreg_weighted2 <- caret::train(Label ~ .,
                        data = Train,
                        method = "glm",
-                       metric="sensitivity",
+                      # metric="sensitivity",
                        weights = weights_Train,
                        family=binomial()
 )
@@ -151,7 +151,7 @@ TPR
 
 #Plot AMS for small values of threshold theta
 
-theta_vals <- as.data.frame(seq(0.0001, 0.5, length.out=500)) # generate small sample thresholds theta
+theta_vals <- as.data.frame(seq(0.0001, 0.1, length.out=500)) # generate small sample thresholds theta
 AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted2,Valid[,1:30],Valid[31], weights_Valid)) #compute AMS(theta)
 plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
 
@@ -186,12 +186,12 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=200){
     logreg_weighted <- caret::train(Label ~ .,
                                   data = Train,
                                   method = "glm",
-                                  metric="sensitivity",
+                                 # metric="sensitivity",
                                   weights = weights_Train,
                                   family=binomial()
    )
 
-   AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,1:30],Valid[31], weights_Valid))
+   AMS_vals[,i] <- apply(theta_vals, 1, AMS(logreg_weighted,Valid[,-length(Valid)],Valid[length(Valid)], weights_Valid))
    max_thetas[i] <- theta_vals[which.max(AMS_vals[,i]),1]
   }
   AMS_mean <- apply(AMS_vals, 1, mean)
@@ -276,6 +276,6 @@ max_AMS
 
 # Choose the threshold
 
-theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.01, k=5, n=200)
-theta_CV
+theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.006, k=5, n=200)
+theta_CV  #less variance, both of theta and of AMS
 
