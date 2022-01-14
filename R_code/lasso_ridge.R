@@ -30,24 +30,10 @@ weights <- reweight(train$Weight, df_train$Label, Ns(), Nb()) # extract weights
 all.equal(sum(weights[df_train$Label == 1]), Ns())
 all.equal(sum(weights[df_train$Label == 0]), Nb())
 
-# missing values ----------------------------------------------------------
-
-#Missing values (and standardisation)
-
-df_train[df_train==-999] <- 0
-
-#if we want to standardise:
-
-#st_train <- df_train
-#st_train <- as.data.frame(scale(df_train[,1:30])) #standardisation
-#st_train["Label"] <- label_factor
-
-
 # feature selection -------------------------------------------------------
 
 # # as in kaggle winning entry, try removing azimuthal angle features
 # df_train <- df_train %>% select(!ends_with('phi'))
-
 
 # partition training/validation data --------------------------------------
 
@@ -63,13 +49,27 @@ weights_Valid <- weights[-trainIndex]
 weights_Train <- reweight(weights_Train, Train$Label, Ns(), Nb())
 weights_Valid <- reweight(weights_Valid, Valid$Label, Ns(), Nb())
 
+# missing values ----------------------------------------------------------
+
+#Missing values (and standardisation)
+
+Train[Train==-999] <- 0
+Valid[Valid==-999] <- 0
+
+#if we want to standardise:
+
+Train_st <- Train %>%
+  mutate(across(!Label, scale))
+Valid_st <- Valid %>%
+  mutate(across(!Label, scale))
+
 # Try and find a model! ---------------------------------------------------
 
 # # for speed while we're tweaking things
-nrows <- 50000
-Train <- slice_head(Train, n=nrows)
-weights_Train <- weights_Train[1:nrows]
-weights_Train <- reweight(weights_Train, Train$Label, Ns(), Nb())
+# nrows <- 50000
+# Train_st <- slice_head(Train_st, n=nrows)
+# weights_Train <- weights_Train[1:nrows]
+# weights_Train <- reweight(weights_Train, Train_st$Label, Ns(), Nb())
 
 # NB: with regularisation, might make sense to include interaction terms
 #     e.g. Label ~ .^2 (all pairwise interactions), since regularising should
@@ -80,22 +80,26 @@ weights_Train <- reweight(weights_Train, Train$Label, Ns(), Nb())
 #             then threshold chosen to maximise AMS on validation set
 
 # glmnet seems to need Label to be factor w/ levels 's', 'b' (not 0, 1)
-levels(Train$Label)[levels(Train$Label)=="0"] <- "b"
-levels(Train$Label)[levels(Train$Label)=="1"] <- "s"
+levels(Train_st$Label)[levels(Train_st$Label)=="0"] <- "b"
+levels(Train_st$Label)[levels(Train_st$Label)=="1"] <- "s"
 
-# try more hyperparameters values!!! (Random search?)
+# try more hyperparameters values!!!
+paramGrid <-  expand.grid(alpha = c(0,0.1,0.25,0.5,0.75,1),
+                          lambda = c(0,0.00001,0.0001,0.001,0.01,0.1,1))
+
 train_control1 <- trainControl(method = 'cv',
-                              number = 10,
+                              number = 5,
                               classProbs = TRUE,
                               savePredictions = TRUE,
                               returnData = TRUE,
                               summaryFunction = twoClassSummary)
 
 caret_glmnet1 <- caret::train(Label ~ .,
-                              Train,
+                              Train_st,
                               trControl = train_control1,
                               metric = 'Spec',
                               method = "glmnet",
+                              tuneGrid = paramGrid,
                               weights = weights_Train
 )
 
@@ -105,15 +109,15 @@ caret_glmnet1 <- caret::train(Label ~ .,
 
 # Find theta based on Valid set
 
-levels(Valid$Label)[levels(Valid$Label)=="0"] <- "b"
-levels(Valid$Label)[levels(Valid$Label)=="1"] <- "s"
+levels(Valid_st$Label)[levels(Valid_st$Label)=="0"] <- "b"
+levels(Valid_st$Label)[levels(Valid_st$Label)=="1"] <- "s"
 
-probs <- predict(caret_glmnet1, newdata = Valid, type='prob')
-theta_seq <- seq(0.00001, 0.1, length.out=10000)
+probs <- predict(caret_glmnet1, newdata = Valid_st, type='prob')
+theta_seq <- seq(0.00001, 0.05, length.out=100)
 ams_vals <- vector(mode='numeric', length=0)
 for(theta in theta_seq){
   preds <- if_else(probs$s > theta, 's', 'b')
-  ams_vals <- append(ams_vals, AMS_weighted_gen(Valid$Label, preds, weights_Valid))
+  ams_vals <- append(ams_vals, AMS_weighted_gen(Valid_st$Label, preds, weights_Valid))
 }
 
 plot(theta_seq, ams_vals)
@@ -130,9 +134,11 @@ df_test$Label <- as.factor(df_test$Label) #need this as factor for caret
 weights_test <- reweight(test$Weight, df_test$Label, Ns(), Nb()) # extract weights
 all.equal(sum(weights_test[df_test$Label == 1]), Ns())
 all.equal(sum(weights_test[df_test$Label == 0]), Nb())
-df_train[df_train==-999] <- 0
+df_test[df_test==-999] <- 0
+Test <- df_test %>%
+  mutate(across(!Label, scale))
 
-probs_test <- predict(caret_glmnet1, newdata=df_test, type='prob')
+probs_test <- predict(caret_glmnet1, newdata=Test, type='prob')
 preds_test <- probs_test$s > theta_max
 
 AMS_weighted(df_test$Label, preds_test, weights_test)
@@ -145,10 +151,71 @@ for(theta in theta_seq_test){
 
 plot(theta_seq_test, ams_test_vals) # promising!!!
 theta_max <- theta_seq_test[ams_test_vals==max(ams_test_vals)]
-# Strategy 1.5: Train as in strategy 1, but k times, with k-fold CV for theta
 
-# TO DO TOMORROW!!
+# Strategy 1.5: Train as in strategy 1 for alpha, lambda, but k times, with k-fold CV for theta ----
 
+threshold_CV_enet <- function(df, label, weights, theta_0, theta_1, k=5, n=50, alpha=0, lambda=0){
+
+  theta_vals <- seq(theta_0, theta_1, length.out=n)
+  max_thetas <- rep(0,k)
+  AMS_vals <- matrix(0, nrow=n, ncol=k)
+
+  for (i in 1:k){
+
+    trainIndex <- createDataPartition(df_train$Label, p = .8, list = FALSE, times = 1)
+
+    Train <- df[ trainIndex,]
+    Train$Label <- label[trainIndex]
+
+    Valid  <- df[-trainIndex,]
+    Valid$Label <- label[-trainIndex]
+
+    weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+    weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
+
+    Train$Label <- as.factor(ifelse(Train$Label == 1, 's', 'b'))
+
+    enet_logreg_weighted <- caret::train(Label ~ .,
+                                         trControl = trainControl(method='none',
+                                                                  classProbs = TRUE,
+                                                                  savePredictions = TRUE,
+                                                                  returnData = TRUE,
+                                                                  summaryFunction = twoClassSummary),
+                                         data = Train,
+                                         method = "glmnet",
+                                         metric = "Sens",
+                                         weights = weights_Train,
+                                         tuneGrid = expand.grid(alpha = 0,
+                                                                lambda = 0)
+    )
+
+    probs <- predict(enet_logreg_weighted, newdata = Valid, type='prob')$s
+    ams_column <- vector(mode='numeric', length=0)
+    for(theta in theta_vals){
+      preds <- probs > theta
+      ams_column <- append(ams_column, AMS_weighted(Valid$Label, preds, weights_Valid))
+    }
+    AMS_vals[,i] <- ams_column
+    max_thetas[i] <- theta_vals[which.max(AMS_vals[,i])]
+  }
+
+  AMS_mean <- apply(AMS_vals, 1, mean)
+  AMS_sd <- apply(AMS_vals, 1, sd)
+  plot(as.array(unlist(theta_vals)), AMS_mean, xlab="theta", ylab="AMS(theta)", pch=19)
+  lines(as.array(unlist(theta_vals)), AMS_mean + mean(AMS_sd), col='red')
+  lines(as.array(unlist(theta_vals)), AMS_mean - mean(AMS_sd), col='red')
+  max_theta <- theta_vals[which.max(AMS_mean)]
+  max_AMS <- AMS_mean[which.max(AMS_mean)]
+  return(list('max_theta'=max_theta, 'max_AMS'=max_AMS, 'AMS_sd'=AMS_sd, 'max_thetas'=max_thetas))
+
+  AMS_vals <- apply(AMS_vals, 1, mean)
+  plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19)
+  max_theta <- theta_vals[which.max(AMS_vals)]
+  max_AMS <- AMS_vals[which.max(AMS_vals)]
+  return(c(max_theta=max_theta, max_AMS=max_AMS))
+  return(enet_logreg_weighted)
+}
+temp <- threshold_CV_enet(st_train, st_train$Label, weights_Train, theta_0=0, theta_1=1, k=2)
 # Strategy 2: train with AMS ---------------------------------------------------
 
 # can implement manual loss function (summaryFunction argument to trainControl)
@@ -156,20 +223,20 @@ theta_max <- theta_seq_test[ams_test_vals==max(ams_test_vals)]
 
 # make loss function ams for caret trainControl
 ams_summaryFn <- function(data, lev=NULL, model=NULL){
-  ams <- ams_fromWeights(data$pred, data$obs, data$weights)
+  ams <- AMS_weighted_gen(data$obs, data$pred, data$weights)
   names(ams) <- 'AMS'
   return(ams)
 }
 
 train_control2 <- trainControl(method = 'cv',
-                              number = 3,
+                              number = 5,
                               classProbs = TRUE,
                               savePredictions = TRUE,
                               returnData = TRUE,
                               summaryFunction = ams_summaryFn)
 
 caret_glmnet2 <- caret::train(Label ~ .,
-                              Train,
+                              Train_st,
                               trControl = train_control2,
                               maximise = TRUE,
                               method = "glmnet",
@@ -218,15 +285,6 @@ caret_glmnet2.5 <- caret::train(Label ~ .,
                               method = "glmnet",
                               metric = 'AMS',
                               weights = weights_Train)
-
-# BIGGER PROBLEM: AMS values no good!
-#                 Values bigger than expected and change with sample size
-#                 (running caret_glmnet2.5 with cutoff 0.001:
-#                   10000 samples gives AMS ~20,
-#                   50000 samples gives AMS ~50)
-#
-# Either function is wrong or weights are wrong
-# (need to reweight for each cv sample maybe?)
 
 
 # Strategy 3: Train using AMS & vary threshold in process -----------------
