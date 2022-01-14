@@ -1,0 +1,235 @@
+---
+title: Report code
+output: pdf_document
+author: Hannah Sansford, Ettore Fincato, Harry Tata
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This markdown file contains the code used to produce all plots and conduct all statistical analysis contained within the report.
+
+## Setup
+
+First load the important packages.
+```{r, results=FALSE, message=FALSE}
+library(tidyverse)
+library(reshape2)
+library(ggplot2)
+library(glmnet)
+library(ROCR)
+library(caret)
+library(cvms)
+library(tibble)
+library(pROC)
+library(checkmate)
+library(BBmisc)
+library(testit)
+library(devtools)
+library(mlr)
+```
+Next, install and load the `higgsboson` package.
+```{r, message=FALSE}
+install_github("https://github.com/hsansford1/higgsboson")
+library(higgsboson)
+```
+Access the data included in the package. First load the data used to train the models.
+```{r}
+train <- higgsboson::training
+```
+Put the data in the format required for training: 
+
+```{r}
+df_train <- train[,2:33] #remove eventid
+df_train <- df_train[,-31] #remove weights
+
+df_train$Label <- ifelse(df_train$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) 
+df_train$Label <- as.factor(df_train$Label) #need this as factor for caret package
+```
+
+Use the `reweight` function to normalise the weights (use `??reweight` to see function help). `Ns()` and `Nb()` are hardcoded values of $N_s$ and $N_b$ for the higgsboson dataset (see 'Problem Formulation' section of report for explanation of these values).
+
+```{r}
+weights <- reweight(train$Weight, df_train$Label, Ns(), Nb()) 
+```
+Set all missing values equal to zero.
+```{r}
+df_train[df_train==-999] <- 0
+```
+To get a standardised data set `st_train`, run the following.
+```{r}
+st_train <- df_train
+st_train <- as.data.frame(scale(df_train[,1:30])) 
+st_train["Label"] <- df_train$Label
+```
+
+## Weighted Logistic Regression with custom AMS metric
+
+The `mlr` package allows the use of custom metrics. First, define the classification task and make the logistic learner
+```{r, warning=FALSE}
+trainTask <- makeClassifTask(data = st_train,
+                             target = "Label",
+                             positive = 1,
+                             weights = weights
+                             )
+
+logistic.learner <- makeLearner("classif.logreg", predict.type = "response")
+```
+Use the custom AMS measure created in the `higgsboson` package `AMS_measure()` to conduct cross-validation on fitting the weighted logistic regression (WLR). This gives us an idea of the AMS we can expect to get from a test set.
+```{r, warning=FALSE}
+set.seed(22)
+AMS_mlr <- AMS_measure()
+cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5,
+                        stratify = TRUE,
+                        measures = AMS_mlr,
+                        show.info = F, models=TRUE)
+cv.logistic$aggr      
+cv.logistic$measures.test
+
+```
+Now, we fit a WLR model using the whole trainind data set and check how it performs on the test data.
+```{r}
+train_control <- trainControl(method = "cv", number = 10)
+
+fmodel <- train(Label ~ .,
+                       data = st_train,
+                       trControl = train_control,
+                       method = "glm",
+                       weights = weights,
+                       family=binomial()
+)
+
+test <- higgsboson::test
+
+df_test <- test[,2:33] #remove eventid
+df_test <- df_test[,-31] #remove weights
+df_test$Label <- ifelse(df_test$Label=="s",1,0) #encode "s" and "b" to 1 - 0 (resp.) for logistic regresion
+df_test$Label <- as.factor(df_test$Label) #need this as factor for caret
+# set misssing values to 0 and standardise data
+df_test[df_test==-999] <- 0
+st_test <- as.data.frame(scale(df_test[,1:30]))
+st_test$Label <- df_test$Label
+
+weights_test <- reweight(test$Weight, st_test$Label, Ns(), Nb()) # extract weights
+
+truth <- st_test$Label
+response <- predict(fmodel, newdata = st_test[,-length(st_test)])
+
+AMS_weighted(truth, response, weights_test) 
+
+```
+## Two-stage maximisation
+
+Below is the code for conducting the two-stage maximisation of the AMS. 
+
+First we create a training/validation split of the training data that preserves the overall class distribution.
+
+```{r}
+trainIndex <- createDataPartition(st_train$Label, p = .8, list = FALSE, times = 1)
+
+Train <- st_train[ trainIndex,]
+Valid  <- st_train[-trainIndex,]
+```
+
+We then fit a WLR model using the new training set `Train`, before visualising how the AMS varies with threshold `theta`. This informs the users decision of how to set the parameters `theta_0` and `theta_1` in the function `threshold_CV` in the `higgsboson` package. We can see that the peak definitely occurs in the range 0 to 0.1.
+```{r, warning=FALSE}
+weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
+
+logreg_weighted2 <- caret::train(Label ~ .,
+                       data = Train,
+                       method = "glm",
+                       weights = weights_Train,
+                       family=binomial()
+)
+
+
+#Plot AMS for different values of threshold theta
+theta_vals <- as.data.frame(seq(0.0001, 0.5, length.out=500)) # generate small sample thresholds theta
+AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted2,Valid[,1:30],Valid[31], weights_Valid)) #compute AMS(theta)
+plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
+
+
+
+```
+
+
+
+```{r}
+
+theta_CV <- threshold_CV(st_train, df_train$Label, weights, theta_0=0.0001, theta_1=0.1)
+theta_CV
+
+
+
+#######################################################################
+
+#Threshold tuning after PCA-dimensional reduction
+
+st_train_pca <- as.data.frame(scale(df_train[1:30])) # standardise the variables
+train.pca <- prcomp(st_train_pca)
+summary(train.pca)
+screeplot(train.pca, type="lines")
+
+#the first pca has by far the highest variance
+#Let's try to keep the first 3 pca's (they have variance bigger than 2)
+
+st_train_dimred <- data.frame("PCA1"=train.pca$x[,1],"PCA2"=train.pca$x[,2],"PCA3"=train.pca$x[,3])
+st_train_dimred["Label"] <- as.factor(df_train$Label)
+
+
+trainIndex <- createDataPartition(st_train_dimred$Label, p = .8,
+                                  list = FALSE,
+                                  times = 1)
+head(trainIndex)
+
+Train <- st_train_dimred[ trainIndex,]
+Valid  <- st_train_dimred[-trainIndex,]
+
+
+#First stage: Logistic regression on Train: CV and sensitivity as metric
+
+weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
+weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
+
+
+#train_control <- trainControl(method = "cv", number = 10)
+
+logreg_weighted_pca <- caret::train(Label ~ .,
+                                    data = Train,
+                                    method = "glm",
+                                    #metric="sensitivity",
+                                    weights = weights_Train,
+                                    family=binomial()
+)
+
+
+
+
+print(logreg_weighted_pca)
+cm <- confusionMatrix(logreg_weighted_pca)
+TPR <- cm$table[2,2]/(cm$table[2,2]+cm$table[1,2]) #TPR - sensitivity
+FPR <- cm$table[2,1]/(cm$table[2,1]+cm$table[1,1])
+TPR
+
+
+#Plot AMS for small values of threshold theta
+
+theta_vals <- as.data.frame(seq(0.0001, 0.05, length.out=500)) # generate small sample thresholds theta
+AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted_pca,Valid[,1:3],Valid[4], weights_Valid)) #compute AMS(theta)
+plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
+
+max_theta <- theta_vals[which.max(AMS_vals),1]
+max_theta
+max_AMS <- AMS_vals[which.max(AMS_vals)]
+max_AMS
+
+# Choose the threshold
+
+theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.006, k=5, n=200)
+theta_CV  #less variance, both of theta and of AMS
+
+
+```
+

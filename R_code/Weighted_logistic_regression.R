@@ -16,7 +16,7 @@ library(higgsboson)
 library(mlr)
 
 ######################################################
-source('./R/useful_functions.R')
+
 # Useful variables
 
 train <- higgsboson::training

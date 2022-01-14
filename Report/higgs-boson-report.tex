@@ -20,6 +20,7 @@
 
 \newcommand{\w}{\mathbf{w}}
 \newcommand{\x}{\mathbf{x}}
+\newcommand{\bbeta}{\boldsymbol \beta}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}{Corollary}[theorem]
@@ -64,7 +65,7 @@ Once the region has been fixed, the significance of the excess is determined usi
 
 \section{Problem Formulation}
 
-Let $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ ve the training set, where $\bm{x}_i \in \mathbb{R}^d$ is a $d$-dimensional feature vector, $y_i \in \{\text{b,s}\}$ is the label, and $w_i \in \mathbb{R}^+$ is a non-negative weight. Let $\mathcal{S} = \{i : y_i = \text{s}\}$ and $\mathcal{B} = \{i : y_i = \text{b}\}$ be the index sets of signal and background events respectively, and let $n_\text{s} = |\mathcal{S}|$ and $n_\text{b} = |\mathcal{B}|$ be the number of simulated signal and background events. 
+Let $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ the the training set, where $\bm{x}_i \in \mathbb{R}^d$ is a $d$-dimensional feature vector, $y_i \in \{\text{b,s}\}$ is the label, and $w_i \in \mathbb{R}^+$ is a non-negative weight. Let $\mathcal{S} = \{i : y_i = \text{s}\}$ and $\mathcal{B} = \{i : y_i = \text{b}\}$ be the index sets of signal and background events respectively, and let $n_\text{s} = |\mathcal{S}|$ and $n_\text{b} = |\mathcal{B}|$ be the number of simulated signal and background events. 
 
 The simulated dataset also includes importance weights for each event. Since the objective function (\ref{AMS}) depends on the \textit{unnormalised sum} of weights, in order to make the setup invariant to the \textit{numbers} of simulated events $n_s$ and $n_b$, the sum across each set (test/training) and each class (signal/background) is set to be fixed, i.e.,
 \begin{equation}
@@ -136,7 +137,12 @@ Similarly, the``logistic regret" of $f$ is defined as
 \label{logistic regret}
 R_{log}(f):= L(f)-L(f^*)
 \end{equation}
-for the expected logistic loss transformation of $f$ $$L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big]$$ and $$f^*:=\underset{f}{\text{argmax}} \ L(f)$$
+for the expected logistic loss transformation of $f$ 
+\begin{equation}
+\label{eq: logloss}
+L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big]
+\end{equation}
+and $$f^*:=\underset{f}{\text{argmin}} \ L(f)$$
 The formal justification of the idea of 
 \begin{itemize}
 \item training a logistic loss transformation of $f$, and
@@ -183,38 +189,54 @@ and by \textit{inferring $p(y|\x)$ directly}. \\
 
 Specifically, it models the log density ratio as 
 
-$$\log\Big(\frac{p(\x|y=-1)p(y=-1)}{p(\x|y=1)p(y=1)}\Big)\overset{model}{=}f(\x,\w):=\langle \w,\x \rangle+w_0$$ 
+$$\log\Big(\frac{p(\x|y=-1)p(y=-1)}{p(\x|y=1)p(y=1)}\Big)\overset{model}{=}f(\x,\bbeta):=\langle \bbeta,\x \rangle+\beta_0$$ 
 
 i.e. models the "log-odds"  by a linear model (the term on the left of the proportionality symbol is added for intuition). In this way we can write 
 \begin{align}
-p(y|\x;\w)=\sigma(f(\x,\w)y)
+p(y|\x;\bbeta)=\sigma(f(\x,\bbeta)y)
 \end{align}
-for a so-called "activation/logistic function" $\sigma(t):=\frac{1}{1+\exp(t)}$.  \\
-ML estimates of $\w$ are computed from the log-likelihood as $$\w_{ML}=\operatorname{argmax}_\w\sum_{i\in D}\log\sigma(f(\x_i,\w)y_i)$$
+for a so-called "activation/logistic function" $\sigma(t):=\frac{1}{1+\exp(-t)}$.  \\
+ML estimates of $\bbeta$ are computed from the log-likelihood as $$\bbeta_{ML}=\operatorname{argmax}_{\bbeta}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)$$
 
+\begin{remark}
+Notice that 
+\begin{align*}
+\text{argmax}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \}) \\
+&=\text{argmin}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x\})
+\end{align*} so that we are consistent with Kotlowsky paper by minimising a log loss as in equation \ref{eq: logloss} (of course, we are minimising its sample counterpart).
+\end{remark}
 \subsubsection{Weighted logistic regression}
+\begin{remark}
+In this dataset weights have an essential role in rebalancing the likelihood of signals and background events, as data have been artificially simulated. We will therefore fit the model with a weighted logistic regression.
+\end{remark}
+
+While unweighted logistic regression maximises 
+$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \})$$
+weighted logistic regression takes into account weights $w_i$ by inserting them in the log likelihood, as follows
+
+$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).$$
 
 \subsection{Generalising logistic regression's decision function}
 \label{app:decision function}
 
-After ML estimates $\hat{\w}$ have been computed, classification of an observation $\x_0$ can be based on whether $p(y=1|\x;\w)$ is bigger than $p(y=-1|\x;\w)$. That is,
+After ML estimates $\hat{\bbeta}$ have been computed, classification of an observation $\x_0$ can be based on whether $p(y=1|\x;\bbeta)$ is bigger than $p(y=-1|\x;\bbeta)$. That is,
 \begin{align*}
-\hat{y}_{\x_0}=1 \ \text{if} \ \sigma(f(\x_0,\hat{\w}))>\sigma(-f(\x_0,\hat{\w})) \\
+\hat{y}_{\x_0}=1 \ \text{if} \ \sigma(f(\x_0,\hat{\bbeta}))>\sigma(-f(\x_0,\hat{\bbeta})) \\
 \text{or, equivalently,} \
-\hat{y}_{\x_0}=1  \ \text{if} \ \log \Big( \frac{\sigma(f(\x_0,\hat{\w}))}{\sigma(-f(\x_0,\hat{\w}))}\Big)>0
+\hat{y}_{\x_0}=1  \ \text{if} \ \log \Big( \frac{\sigma(f(\x_0,\hat{\bbeta}))}{\sigma(-f(\x_0,\hat{\bbeta}))}\Big)>0
 \end{align*} 
 
-We know that $$\log \Big( \frac{\sigma(f(\x_0,\hat{\w}))}{\sigma(-f(\x_0,\hat{\w}))}\Big)\propto \langle\hat{\w},\x_0\rangle+\hat{w}_0$$
+We know that $$\log \Big( \frac{\sigma(f(\x_0,\hat{\bbeta}))}{\sigma(-f(\x_0,\hat{\bbeta}))}\Big)\propto \langle\hat{\bbeta},\x_0\rangle+\hat{\beta}_0$$
 Therefore, classification from standard logistic regression can also be made as follows
 
 \begin{align*}
-\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \langle\hat{\w},\x_0\rangle+\hat{w}_0>0 \  \text{(resp.} <0).
+\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \langle\hat{\bbeta},\x_0\rangle+\hat{\beta}_0>0 \  \text{(resp.} <0).
 \end{align*}
 
 \begin{remark}
 The two-stage procedure "generalises" this classification method by admitting that there is a $\theta\in \mathbb{R}$, possibly different from $0$, such that the classification based on 
 \begin{align*}
-\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \langle\hat{\w},\x_0\rangle+\hat{w}_0>\theta \  \text{(resp.} <\theta).
+\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \langle\hat{\bbeta},\x_0\rangle+\hat{\beta}_0>\theta \  \text{(resp.} <\theta).
 \end{align*}
 could be "better" (for some purposes) than the standard logistic regression one. 
 \end{remark}
@@ -224,21 +246,53 @@ could be "better" (for some purposes) than the standard logistic regression one.
 
 \subsection{AMS as direct measure - Cross Validation}
 
-As first attempt, a standard (i.e., $\theta=0.5$) logistic regression has been fitted on the train set. Cross validation suggested that if we tune the coefficients of the model in order to directly maximise AMS, then we cannot get a value of AMS bigger than $0.3$. This is a quite small value - as one may also understand by results in next sections. Many attempts get a value of AMS bigger than that even on the test set. This suggests that \textit{directly} tuning \textit{the coefficients} of a standard logistic regression on the basis of AMS is not a good strategy.
+As first attempt, a standard (i.e., $\theta=0.5$) weighted logistic regression (WLR) has been fitted on the train set. Cross validation suggested that we can expect to get an AMS in the range [0.15, 0.41] on a test set. This is a relatively small value compared to results in following sections. Many attempts result in a AMS value larger than the upper bound found in cross-validation on test sets.
+% Do you mean attempts using other model fitting strategies or the same strategt?%
+
+Using the entire set of training data to fit the WLR model, we get an AMS value of 0.18 on the test data set.
 
 \subsection{Two-stage maximisation}
 
-
 \subsubsection{First stage}
+The training set $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ has been splitted into $D_t$ (containing $80\%$ of observations) and a validation set $D_v$, containing $20\%$ of the observations. A weighted logistic regression has been fitted on $D_t$, thus obtaining its estimated coefficients $\hat{\bbeta}$. 
+
+
+
 \subsubsection{Tuning of threshold theta}
+The validation set $D_v$ has been used to select the value of the threshold $\theta$ for which the AMS is maximised (on $D_v$). Uncertainty on $AMS$ and on the best $\theta$ have been obtained by a cross validation procedure.
 
-%\begin{figure}
-%\label{fig: train_tuned_theta}
-%\includegraphics[scale=0.20]{traintunedtheta.png}
-%\caption{}
-%\end{figure}
 
-\section{Performance on test set}
+\begin{figure}[h!]
+\centering
+\label{fig: train_tuned_theta}
+\includegraphics[scale=0.7]{../Pictures/traintunedtheta.png}
+\caption{AMS values from CV procedure for different thresholds}
+\end{figure}
+
+Figure \ref{fig: train_tuned_theta} shows that AMS is maximised for small values of $\theta$ (smaller than 0.02). The maximum value of AMS is around $1.45$ - much higher than the one found with a standard logistic regression. A simple Monte carlo maximisation of $\text{AMS}(\theta)$ leads the optimal threshold $\hat{\theta}$, which is generally found to be between around $0.004$. \\
+
+The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's 9see figure \ref{fig: screeplot}.
+\begin{figure}[h!]
+\centering
+\label{fig: screeplot}
+\includegraphics[scale=0.7]{../Pictures/trainpcascreeplot.png} 
+\caption{Screeplot}
+\end{figure}
+
+We decided to use the first $3$ PC's as a new dataset, and repeat the procedure below. Cross-validated AMS values are plotted in figure \ref{fig: tuned_pca}.
+
+\begin{figure}[h!]
+\centering
+\label{fig: tuned_pca}
+\includegraphics[scale=0.6]{../Pictures/trainpcatunedtheta.png}
+\caption{AMS values from CV procedure for different thresholds - on the first three pca's}
+\end{figure}
+
+One can see that the AMS on validation set on the PC's is much more "peaked". In particular, AMS variance is lower than before, and the range of suitable thetas is much shorter too. This might be a sign of overfitting. $\hat{\theta}_{pc}$ is almost always $0.0017$.
+
+
+
+
 
 \bibliographystyle{plain}
 \bibliography{refs}
