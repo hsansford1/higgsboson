@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.27)  15 JAN 2022 12:17
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.27)  15 JAN 2022 13:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -586,50 +586,25 @@ Underfull \hbox (badness 10000) in paragraph at lines 186--188
 File: ../Pictures/traintunedtheta.png Graphic file (type png)
 <use ../Pictures/traintunedtheta.png>
 Package pdftex.def Info: ../Pictures/traintunedtheta.png  used on input line 27
-2.
+1.
 (pdftex.def)             Requested size: 258.21292pt x 274.54884pt.
  [5]
-
-Package caption Warning: \label without proper reference on input line 271.
-See the caption package documentation for explanation.
-
-
-LaTeX Warning: Reference `fig: train_tuned_theta' on page 6 undefined on input 
-line 276.
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 276--277
 
  []
-
-
-Package caption Warning: \label without proper reference on input line 281.
-See the caption package documentation for explanation.
-
-
-LaTeX Warning: Reference `fig: screeplot' on page 6 undefined on input line 278
-.
 
 <../Pictures/trainpcascreeplot.png, id=150, 368.87813pt x 392.21532pt>
 File: ../Pictures/trainpcascreeplot.png Graphic file (type png)
 <use ../Pictures/trainpcascreeplot.png>
 Package pdftex.def Info: ../Pictures/trainpcascreeplot.png  used on input line 
-282.
+281.
 (pdftex.def)             Requested size: 258.21292pt x 274.54884pt.
 [6 <../Pictures/traintunedtheta.png (PNG copy)>]
-
-Package caption Warning: \label without proper reference on input line 290.
-See the caption package documentation for explanation.
-
-
-LaTeX Warning: Reference `fig: tuned_pca' on page 7 undefined on input line 286
-.
-
 <../Pictures/trainpcatunedtheta.png, id=159, 368.87813pt x 392.21532pt>
 File: ../Pictures/trainpcatunedtheta.png Graphic file (type png)
 <use ../Pictures/trainpcatunedtheta.png>
 Package pdftex.def Info: ../Pictures/trainpcatunedtheta.png  used on input line
- 291.
+ 290.
 (pdftex.def)             Requested size: 221.32857pt x 235.331pt.
 
 Underfull \hbox (badness 10000) in paragraph at lines 299--300
@@ -642,44 +617,32 @@ Underfull \hbox (badness 10000) in paragraph at lines 301--302
 
  []
 
-
-Package caption Warning: \label without proper reference on input line 307.
-See the caption package documentation for explanation.
-
-
-LaTeX Warning: Reference `fig: AMS on test' on page 8 undefined on input line 3
-03.
-
 <../Pictures/testbadpractice.png, id=168, 356.83313pt x 374.14781pt>
 File: ../Pictures/testbadpractice.png Graphic file (type png)
 <use ../Pictures/testbadpractice.png>
 Package pdftex.def Info: ../Pictures/testbadpractice.png  used on input line 30
-8.
+7.
 (pdftex.def)             Requested size: 249.78148pt x 261.90167pt.
-(./higgs-boson-report.bbl)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 319.
- [8 <../Pictures/testbadpractice.png>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 319.
+(./higgs-boson-report.bbl [8 <../Pictures/testbadpractice.png>])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 320.
+ [9]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 320.
 
 (./higgs-boson-report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 319.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 319.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 320.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 320.
 Package rerunfilecheck Info: File `higgs-boson-report.out' has not changed.
-(rerunfilecheck)             Checksum: A0B8006D752809D938A1723D62804EB9;1091.
-
-
-LaTeX Warning: There were undefined references.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 319.
+(rerunfilecheck)             Checksum: A03A36C29B5BBD764D9D855AC19F8BF8;1093.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 320.
  ) 
 Here is how much of TeX's memory you used:
- 10760 strings out of 481239
- 169956 string characters out of 5920377
- 460216 words of memory out of 5000000
+ 10761 strings out of 481239
+ 169962 string characters out of 5920377
+ 460178 words of memory out of 5000000
  25749 multiletter control sequences out of 15000+600000
  547443 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 43i,12n,77p,1040b,399s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 43i,12n,77p,1146b,443s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-ts1.enc}</usr/share/texli
 ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dis
@@ -700,10 +663,10 @@ e1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
 ic/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
 fonts/cm/cmti9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/s
 ymbols/msbm10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on higgs-boson-report.pdf (8 pages, 324587 bytes).
+Output written on higgs-boson-report.pdf (9 pages, 325659 bytes).
 PDF statistics:
- 258 PDF objects out of 1000 (max. 8388607)
- 218 compressed objects within 3 object streams
- 52 named destinations out of 1000 (max. 500000)
+ 264 PDF objects out of 1000 (max. 8388607)
+ 223 compressed objects within 3 object streams
+ 53 named destinations out of 1000 (max. 500000)
  149 words of extra memory for PDF output out of 10000 (max. 10000000)
 

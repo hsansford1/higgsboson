@@ -201,8 +201,8 @@ ML estimates of $\bbeta$ are computed from the log-likelihood as $$\bbeta_{ML}=\
 \begin{remark}
 Notice that 
 \begin{align*}
-\text{argmax}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \}) \\
-&=\text{argmin}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x\})
+\text{argmax}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \}) \\
+&=\text{argmin}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x_i\})
 \end{align*} so that we are consistent with Kotlowsky paper by minimising a log loss as in equation \ref{eq: logloss} (of course, we are minimising its sample counterpart).
 \end{remark}
 \subsubsection{Weighted logistic regression}
@@ -211,11 +211,18 @@ In this dataset weights have an essential role in rebalancing the likelihood of 
 \end{remark}
 
 While unweighted logistic regression maximises 
+<<<<<<< HEAD
 $$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \})$$
 weighted logistic regression takes into account weights $w_i$ by inserting them in the log likelihood, as follows
 \begin{equation}\label{eq:wlr_beta}
 \hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).
 \end{equation}
+=======
+$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \})$$
+weighted logistic regression takes into account weights $w_i$ by weighting the corresponding observations, finding
+
+$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x_i \}).$$
+>>>>>>> f9ade5e2d8590f84654f49548eeb7a7300b20dc0
 
 \subsection{Generalising logistic regression's decision function}
 \label{app:decision function}
@@ -269,28 +276,28 @@ The validation set $D_v$ has been used to select the value of the threshold $\th
 
 \begin{figure}[H]
 \centering
-\label{fig: train_tuned_theta}
 \includegraphics[scale=0.7]{../Pictures/traintunedtheta.png}
 \caption{AMS values from CV procedure for different thresholds}
+\label{fig: train_tuned_theta}
 \end{figure}
 
 Figure \ref{fig: train_tuned_theta} shows that AMS is maximised for small values of $\theta$ (smaller than 0.02). The maximum value of AMS is around $1.45$ - much higher than the one found with a standard logistic regression. A simple Monte carlo maximisation of $\text{AMS}(\theta)$ leads the optimal threshold $\hat{\theta}$, which is generally found to be between around $0.004$. \\
 
-The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's 9see figure \ref{fig: screeplot}.
+The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's (see Figure \ref{fig: screeplot}).
 \begin{figure}[H]
 \centering
-\label{fig: screeplot}
 \includegraphics[scale=0.7]{../Pictures/trainpcascreeplot.png} 
 \caption{Screeplot}
+\label{fig: screeplot}
 \end{figure}
 
-We decided to use the first $3$ PC's as a new dataset, and repeat the procedure below. Cross-validated AMS values are plotted in figure \ref{fig: tuned_pca}.
+We decided to use the first $3$ PC's as a new dataset, and repeat the procedure below. Cross-validated AMS values are plotted in Figure \ref{fig: tuned_pca}.
 
 \begin{figure}[H]
 \centering
-\label{fig: tuned_pca}
 \includegraphics[scale=0.6]{../Pictures/trainpcatunedtheta.png}
 \caption{AMS values from CV procedure for different thresholds - on the first three pca's}
+\label{fig: tuned_pca}
 \end{figure}
 
 One can see that the AMS on validation set on the PC's is much more "peaked". In particular, AMS variance is lower than before, and the range of suitable thetas is much shorter too. This might be a sign of overfitting. $\hat{\theta}_{pc}$ is almost always $0.0017$.
@@ -301,20 +308,28 @@ It has been already said that a standard logistic regression on test set reaches
 
 On the contrary, the two stage procedure has a much better performance on test set. With the threshold theta suggested from the second stage procedure on all the features, AMS on test set is about $1.5$, which is a big improvement. With the threshold suggested after PCA, we get an AMS of about $1.37$. This is still much better than using a standard logistic regression classification rule, but smaller than for the threshold suggested by the original training set. This, as said before, may be connected to some overfitting - the range of suggested theta's was much shorter than before dimensional reduction.\\
 
-There is something else suggesting that the two-stage procedure allows us to pick a threshold which is suited for the test set too. In figure \ref{fig: AMS on test}, AMS values from predictions on test set are plotted for different thetas. It is clear that few values of theta lead to a high value of AMS, and among them we find the ones suggested from the second stage of our procedure. 
+There is something else suggesting that the two-stage procedure allows us to pick a threshold which is suited for the test set too. In Figure \ref{fig: AMS on test}, AMS values from predictions on test set are plotted for different thetas. It is clear that few values of theta lead to a high value of AMS, and among them we find the ones suggested from the second stage of our procedure. 
 
 \begin{figure}[H]
 \centering
-\label{fig: AMS on test}
 \includegraphics[scale=0.7]{../Pictures/testbadpractice.png}
 \caption{AMS values after predictions on test set - for different thetas.}
+\label{fig: AMS on test}
 \end{figure}
 
+<<<<<<< HEAD
 \subsection{Comments}
 Elastic net (weighted) logistic regression, where coefficients are found by modifying equation \label{eq:wlr_beta} to include terms penalising their L1 and L2 norms
 $$\hat{\bbeta}= \text{argmax}\left[ \left( \sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \})\right)  + \lambda\left[ \frac{1-\alpha}{2}||\bbeta||^2_2 + \alpha||\bbeta||_1 \right] \right], 
 $$
 was also implemented (with standardised input data) for both the direct and two-stage approaches with hyperparameters $\alpha, \lambda$ selected by cross validation. In both cases $\lambda=0$ -- corresponding to the unpenalised model -- was found to be optimal. This is likely because the training dataset (250000 observations) was very large compared to the number of features (30); with higher-dimensional models, for example those including interaction terms, an elastic net regression may be beneficial.
+=======
+\subsection{Discussion}
+
+The developments above go in redefining the use of a logistic regression for the Higgs Boson decay classification problem for AMS maximisation. The winning solution of the challenge leads, using a complicated black box model with many neural networks, to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that being the resulting AMS (1.5) after the two-stage procedure much higher than the one for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems to not overfit: AMS values on train and test set are very close.
+
+
+>>>>>>> f9ade5e2d8590f84654f49548eeb7a7300b20dc0
 \bibliographystyle{plain}
 \bibliography{refs}
 
