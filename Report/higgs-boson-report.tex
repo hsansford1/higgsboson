@@ -213,8 +213,9 @@ In this dataset weights have an essential role in rebalancing the likelihood of 
 While unweighted logistic regression maximises 
 $$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \})$$
 weighted logistic regression takes into account weights $w_i$ by inserting them in the log likelihood, as follows
-
-$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).$$
+\begin{equation}\label{eq:wlr_beta}
+\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).
+\end{equation}
 
 \subsection{Generalising logistic regression's decision function}
 \label{app:decision function}
@@ -310,9 +311,10 @@ There is something else suggesting that the two-stage procedure allows us to pic
 \end{figure}
 
 \subsection{Comments}
-
-
-
+Elastic net (weighted) logistic regression, where coefficients are found by modifying equation \label{eq:wlr_beta} to include terms penalising their L1 and L2 norms
+$$\hat{\bbeta}= \text{argmax}\left[ \left( \sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \})\right)  + \lambda\left[ \frac{1-\alpha}{2}||\bbeta||^2_2 + \alpha||\bbeta||_1 \right] \right], 
+$$
+was also implemented (with standardised input data) for both the direct and two-stage approaches with hyperparameters $\alpha, \lambda$ selected by cross validation. In both cases $\lambda=0$ -- corresponding to the unpenalised model -- was found to be optimal. This is likely because the training dataset (250000 observations) was very large compared to the number of features (30); with higher-dimensional models, for example those including interaction terms, an elastic net regression may be beneficial.
 \bibliographystyle{plain}
 \bibliography{refs}
 
