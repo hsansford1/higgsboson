@@ -2,6 +2,7 @@
 
 export(AMS)
 export(AMS_base)
+export(AMS_measure)
 export(AMS_weighted)
 export(Nb)
 export(Ns)
