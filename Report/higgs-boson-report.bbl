@@ -1,0 +1,19 @@
+\begin{thebibliography}{1}
+
+\bibitem{ATLAS-experiment}
+{Evidence for Higgs Boson Decays to the $\tau^+\tau^-$ Final State with the
+  ATLAS Detector}.
+\newblock Technical report, CERN, Geneva, Nov 2013.
+\newblock All figures including auxiliary figures are available at
+  https://atlas.web.cern.ch/Atlas/GROUPS/PHYSICS/CONFNOTES/ATLAS-CONF-2013-108.
+
+\bibitem{higgs-challenge}
+Claire Adam-Bourdarios, Glen Cowan, Cecile Germain, Isabelle Guyon, Balazs
+  Kegl, and David Rousseau.
+\newblock Learning to discover: the higgs boson machine learning challenge.
+
+\bibitem{kotlowski2014consistent}
+Wojciech Kotlowski.
+\newblock Consistent optimization of ams by logistic loss minimization, 2014.
+
+\end{thebibliography}
