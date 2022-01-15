@@ -268,28 +268,28 @@ The validation set $D_v$ has been used to select the value of the threshold $\th
 
 \begin{figure}[H]
 \centering
-\label{fig: train_tuned_theta}
 \includegraphics[scale=0.7]{../Pictures/traintunedtheta.png}
 \caption{AMS values from CV procedure for different thresholds}
+\label{fig: train_tuned_theta}
 \end{figure}
 
 Figure \ref{fig: train_tuned_theta} shows that AMS is maximised for small values of $\theta$ (smaller than 0.02). The maximum value of AMS is around $1.45$ - much higher than the one found with a standard logistic regression. A simple Monte carlo maximisation of $\text{AMS}(\theta)$ leads the optimal threshold $\hat{\theta}$, which is generally found to be between around $0.004$. \\
 
-The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's 9see figure \ref{fig: screeplot}.
+The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's (see Figure \ref{fig: screeplot}).
 \begin{figure}[H]
 \centering
-\label{fig: screeplot}
 \includegraphics[scale=0.7]{../Pictures/trainpcascreeplot.png} 
 \caption{Screeplot}
+\label{fig: screeplot}
 \end{figure}
 
-We decided to use the first $3$ PC's as a new dataset, and repeat the procedure below. Cross-validated AMS values are plotted in figure \ref{fig: tuned_pca}.
+We decided to use the first $3$ PC's as a new dataset, and repeat the procedure below. Cross-validated AMS values are plotted in Figure \ref{fig: tuned_pca}.
 
 \begin{figure}[H]
 \centering
-\label{fig: tuned_pca}
 \includegraphics[scale=0.6]{../Pictures/trainpcatunedtheta.png}
 \caption{AMS values from CV procedure for different thresholds - on the first three pca's}
+\label{fig: tuned_pca}
 \end{figure}
 
 One can see that the AMS on validation set on the PC's is much more "peaked". In particular, AMS variance is lower than before, and the range of suitable thetas is much shorter too. This might be a sign of overfitting. $\hat{\theta}_{pc}$ is almost always $0.0017$.
@@ -300,13 +300,13 @@ It has been already said that a standard logistic regression on test set reaches
 
 On the contrary, the two stage procedure has a much better performance on test set. With the threshold theta suggested from the second stage procedure on all the features, AMS on test set is about $1.5$, which is a big improvement. With the threshold suggested after PCA, we get an AMS of about $1.37$. This is still much better than using a standard logistic regression classification rule, but smaller than for the threshold suggested by the original training set. This, as said before, may be connected to some overfitting - the range of suggested theta's was much shorter than before dimensional reduction.\\
 
-There is something else suggesting that the two-stage procedure allows us to pick a threshold which is suited for the test set too. In figure \ref{fig: AMS on test}, AMS values from predictions on test set are plotted for different thetas. It is clear that few values of theta lead to a high value of AMS, and among them we find the ones suggested from the second stage of our procedure. 
+There is something else suggesting that the two-stage procedure allows us to pick a threshold which is suited for the test set too. In Figure \ref{fig: AMS on test}, AMS values from predictions on test set are plotted for different thetas. It is clear that few values of theta lead to a high value of AMS, and among them we find the ones suggested from the second stage of our procedure. 
 
 \begin{figure}[H]
 \centering
-\label{fig: AMS on test}
 \includegraphics[scale=0.7]{../Pictures/testbadpractice.png}
 \caption{AMS values after predictions on test set - for different thetas.}
+\label{fig: AMS on test}
 \end{figure}
 
 \subsection{Comments}
