@@ -201,8 +201,8 @@ ML estimates of $\bbeta$ are computed from the log-likelihood as $$\bbeta_{ML}=\
 \begin{remark}
 Notice that 
 \begin{align*}
-\text{argmax}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \}) \\
-&=\text{argmin}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x_i\})
+\text{argmax}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \}) \\
+&=\text{argmin}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x\})
 \end{align*} so that we are consistent with Kotlowsky paper by minimising a log loss as in equation \ref{eq: logloss} (of course, we are minimising its sample counterpart).
 \end{remark}
 \subsubsection{Weighted logistic regression}
@@ -211,10 +211,10 @@ In this dataset weights have an essential role in rebalancing the likelihood of 
 \end{remark}
 
 While unweighted logistic regression maximises 
-$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \})$$
-weighted logistic regression takes into account weights $w_i$ by weighting corresponding observations, estimating
+$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \})$$
+weighted logistic regression takes into account weights $w_i$ by inserting them in the log likelihood, as follows
 
-$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x_i \}).$$
+$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).$$
 
 \subsection{Generalising logistic regression's decision function}
 \label{app:decision function}
@@ -275,11 +275,7 @@ The validation set $D_v$ has been used to select the value of the threshold $\th
 
 Figure \ref{fig: train_tuned_theta} shows that AMS is maximised for small values of $\theta$ (smaller than 0.02). The maximum value of AMS is around $1.45$ - much higher than the one found with a standard logistic regression. A simple Monte carlo maximisation of $\text{AMS}(\theta)$ leads the optimal threshold $\hat{\theta}$, which is generally found to be between around $0.004$. \\
 
-<<<<<<< Updated upstream
 The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's (see Figure \ref{fig: screeplot}).
-=======
-The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's (see figure \ref{fig: screeplot}).
->>>>>>> Stashed changes
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.7]{../Pictures/trainpcascreeplot.png} 
@@ -313,9 +309,7 @@ There is something else suggesting that the two-stage procedure allows us to pic
 \label{fig: AMS on test}
 \end{figure}
 
-\subsection{Discussion}
-
-The developments above go in redefining the use of a logistic regression for the Higgs Boson decay classification problem for AMS maximisation. The winning solution of the challenge leads, using a complicated black box model with many neural networks, to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that being the resulting AMS (1.5) after the two-stage procedure much higher than the one for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems to not overfit: AMS values on train and test set are very close.
+\subsection{Comments}
 
 
 
