@@ -201,8 +201,8 @@ ML estimates of $\bbeta$ are computed from the log-likelihood as $$\bbeta_{ML}=\
 \begin{remark}
 Notice that 
 \begin{align*}
-\text{argmax}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \}) \\
-&=\text{argmin}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x\})
+\text{argmax}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \}) \\
+&=\text{argmin}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x_i\})
 \end{align*} so that we are consistent with Kotlowsky paper by minimising a log loss as in equation \ref{eq: logloss} (of course, we are minimising its sample counterpart).
 \end{remark}
 \subsubsection{Weighted logistic regression}
@@ -211,10 +211,10 @@ In this dataset weights have an essential role in rebalancing the likelihood of 
 \end{remark}
 
 While unweighted logistic regression maximises 
-$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \})$$
-weighted logistic regression takes into account weights $w_i$ by inserting them in the log likelihood, as follows
+$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \})$$
+weighted logistic regression takes into account weights $w_i$ by weighting the corresponding observations, finding
 
-$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).$$
+$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x_i \}).$$
 
 \subsection{Generalising logistic regression's decision function}
 \label{app:decision function}
