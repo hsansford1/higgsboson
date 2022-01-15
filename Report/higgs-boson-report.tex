@@ -131,7 +131,7 @@ where $\bm{X}$ denotes a random imput vector and $Y$ a random binary response. T
 \label{regret}
 R_{AMS}(h):= \text{AMS}^2(h^*)-\text{AMS}^2(h)
 \end{equation}
-where $$h^*:=\underset{h}{\text{argmax}} \ \text{AMS}^2(h).$$
+where $$h^*:=\argmax_h \ \text{AMS}^2(h).$$
 Similarly, the``logistic regret" of $f$ is defined as
 \begin{equation}
 \label{logistic regret}
@@ -142,7 +142,7 @@ for the expected logistic loss transformation of $f$
 \label{eq: logloss}
 L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big]
 \end{equation}
-and $$f^*:=\underset{f}{\text{argmin}} \ L(f)$$
+and $$f^*:=\argmin_f \ L(f)$$
 The formal justification of the idea of 
 \begin{itemize}
 \item training a logistic loss transformation of $f$, and
@@ -152,7 +152,7 @@ comes from the following theorem.
 
 \begin{theorem}
 \label{thm: two stage maximisation}
-Given a real-valued function $f$ and the related classifier $h(\theta):=\operatorname{sgn}(f-\theta)$,  let $\hat{\theta}:=\underset{\theta}{\operatorname{argmax}} \ \operatorname{AMS}(h)$. Then,
+Given a real-valued function $f$ and the related classifier $h(\theta):=\operatorname{sgn}(f-\theta)$,  let $\hat{\theta}:=\argmax_\theta \ \operatorname{AMS}(h)$. Then,
 \begin{equation}
 \label{regret inequality}
 R_{AMS}(h(\hat{\theta}))\leq \frac{s(h^*)}{b(h^*)}\sqrt{\frac{1}{2}R_{log}(f)}
@@ -183,7 +183,7 @@ Suppose $y\in \{-1,1\}$. Note that
 p(y=1|\x)&=\frac{p(\x|y=1)p(y=1)}{p(\x|y=1)p(y=1)+p(\x|y=-1)p(y=-1))} = \frac{1}{1+\frac{p(\x|y=-1)p(y=-1)}{p(\x|y=1)p(y=1)}}
 \end{align}
 Logistic regression is a discriminative learning model which aims at minimising an expected loss by predicting 
-$$\hat{y}=\operatorname{argmin}_{y_0}\mathbb{E}_{p(y|\x)}(L(y,y_0)|\x)$$
+$$\hat{y}=\argmin_{y_0}\mathbb{E}_{p(y|\x)}(L(y,y_0)|\x)$$
 and by \textit{inferring $p(y|\x)$ directly}. \\
 
 
@@ -196,13 +196,13 @@ i.e. models the "log-odds"  by a linear model (the term on the left of the propo
 p(y|\x;\bbeta)=\sigma(f(\x,\bbeta)y)
 \end{align}
 for a so-called "activation/logistic function" $\sigma(t):=\frac{1}{1+\exp(-t)}$.  \\
-ML estimates of $\bbeta$ are computed from the log-likelihood as $$\bbeta_{ML}=\operatorname{argmax}_{\bbeta}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)$$
+ML estimates of $\bbeta$ are computed from the log-likelihood as $$\bbeta_{ML}=\argmax_{\bbeta}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)$$
 
 \begin{remark}
 Notice that 
 \begin{align*}
-\text{argmax}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \}) \\
-&=\text{argmin}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x\})
+\argmax_{\bbeta}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\argmax_{\bbeta}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \}) \\
+&=\argmin_{\bbeta}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x_i\})
 \end{align*} so that we are consistent with Kotlowsky paper by minimising a log loss as in equation \ref{eq: logloss} (of course, we are minimising its sample counterpart).
 \end{remark}
 \subsubsection{Weighted logistic regression}
@@ -211,10 +211,18 @@ In this dataset weights have an essential role in rebalancing the likelihood of 
 \end{remark}
 
 While unweighted logistic regression maximises 
-$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x \})$$
-weighted logistic regression takes into account weights $w_i$ by inserting them in the log likelihood, as follows
+$$\hat{\bbeta}=\argmax_{\bbeta}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \}),$$
+weighted logistic regression takes into account weights $w_i$ by weighting the corresponding observations, finding
+\begin{equation}
+\hat{\bbeta}=\argmax_{\bbeta}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).
+\end{equation}
 
-$$\hat{\bbeta}=\text{argmax}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).$$
+\begin{remark}
+Elastic net (weighted) logistic regression, where
+$$\hat{\bbeta}= \argmax_{\bbeta}\left[ \left( \sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \})\right)  + \lambda\left[ \frac{1-\alpha}{2}||\bbeta||^2_2 + \alpha||\bbeta||_1 \right] \right], 
+$$
+penalises the L1 and L2 norms of the coefficients. This was implemented for both the direct and two-stage approaches with $\alpha, \lambda$ selected by cross validation. In both cases $\lambda=0$ -- the unpenalised model -- performed best. Here the training dataset (250000 observations) was very large compared to the number of features (30); with higher-dimensional models an elastic net regression may be beneficial.
+\end{remark}
 
 \subsection{Generalising logistic regression's decision function}
 \label{app:decision function}
@@ -309,8 +317,9 @@ There is something else suggesting that the two-stage procedure allows us to pic
 \label{fig: AMS on test}
 \end{figure}
 
-\subsection{Comments}
+\subsection{Discussion}
 
+The developments above go in redefining the use of a logistic regression for the Higgs Boson decay classification problem for AMS maximisation. The winning solution of the challenge leads, using a complicated black box model with many neural networks, to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that being the resulting AMS (1.5) after the two-stage procedure much higher than the one for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems to not overfit: AMS values on train and test set are very close.
 
 
 \bibliographystyle{plain}
