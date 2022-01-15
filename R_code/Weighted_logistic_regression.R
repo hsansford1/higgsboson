@@ -82,7 +82,7 @@ cv.logistic <- crossval(learner = logistic.learner, task = trainTask, iters = 5,
                         stratify = TRUE,
                         measures = AMS_mlr,
                         show.info = F, models=TRUE)
-cv.logistic$aggr      
+cv.logistic$aggr
 cv.logistic$measures.test # able to get AMS = no more than 0.3
 
 #fmodel <- cv.logistic$models[[2]]
@@ -92,18 +92,24 @@ fmodel <- mlr::train(logistic.learner,trainTask)
 getLearnerModel(fmodel)
 
 
-
 # get s and b using weights
 pred <- predict(fmodel, trainTask)
-truth <- pred$data$truth
-response <- pred$data$response
 
-# Replace with call to AMS_weighted instead? XXX
-s <- sum(weights[(truth == 1) & (response == 1)])
-b <- sum(weights[(truth == 0) & (response == 1)])
+# # Replace with call to AMS_weighted instead? XXX
 
-AMS_base(s,b) 
-# XXX
+# truth <- pred$data$truth
+# response <- pred$data$response
+
+# s <- sum(weights[(truth == 1) & (response == 1)])
+# b <- sum(weights[(truth == 0) & (response == 1)])
+#
+# AMS_base(s,b)
+# # XXX
+
+# Replaced above (feel free to delete the above)
+AMS_weighted(pred$data$truth, pred$data$response, weights)
+
+
 
 #####################################################################
 
@@ -158,8 +164,6 @@ plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pc
 max_theta <- theta_vals[which.max(AMS_vals),1]
 max_AMS <- AMS_vals[which.max(AMS_vals)]
 max_AMS
-
-
 
 #####################################################################################
 
