@@ -140,12 +140,13 @@ threshold_CV <- function(df, label, weights, theta_0, theta_1, k=5, n=200){
   }
   AMS_mean <- apply(AMS_vals, 1, mean)
   AMS_sd <- apply(AMS_vals, 1, sd)
+  mean_AMS_sd <- mean(AMS_sd)
   plot(as.array(unlist(theta_vals)), AMS_mean, xlab="theta", ylab="AMS(theta)", pch=19)
-  lines(as.array(unlist(theta_vals)), AMS_mean + mean(AMS_sd), col='red')
-  lines(as.array(unlist(theta_vals)), AMS_mean - mean(AMS_sd), col='red')
+  lines(as.array(unlist(theta_vals)), AMS_mean + mean_AMS_sd, col='red')
+  lines(as.array(unlist(theta_vals)), AMS_mean - mean_AMS_sd, col='red')
   max_theta <- theta_vals[which.max(AMS_mean),1]
   max_AMS <- AMS_mean[which.max(AMS_mean)]
-  return(list('max_theta'=max_theta, 'max_AMS'=max_AMS, 'AMS_sd'=AMS_sd, 'max_thetas'=max_thetas))
+  return(list('max_theta'=max_theta, 'max_AMS'=max_AMS, 'mean_AMS_sd'=mean_AMS_sd, 'max_thetas'=max_thetas))
 }
 
 #---------------------------------------------------------------------

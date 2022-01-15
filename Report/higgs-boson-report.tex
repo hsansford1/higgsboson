@@ -41,7 +41,7 @@
 
 \begin{abstract}
 
-We investigate the tuning of a logistic regression for finding evidence of the decay into \textit{fermion} pairs of the Higgs Boson, for the Higgs Boson Machine Learning Challenge \cite{higgs-challenge}. With the aim of finding a logistic classification maximising the AMS objective function \ref{AMS}, we show a tuning based on a two-stage procedure from \cite{kotlowski2014consistent}. This tuning strategy relies on a first stage where we fit the logistic model coefficients, and on a second stage where we tune a classification threshold on the basis of AMS. Being able to show that AMS values based on the two-stage procedure are significantly bigger than the ones based on the standard logistic classification threshold, we can state that the coefficients from the logistic model can still be considered. Logistic regression is a simple model with a straightforward coefficients interpretation, which is convenient for a setting in which the variables have a physical interpretation.
+We investigate the tuning of a logistic regression for finding evidence of the decay into \textit{fermion} pairs of the Higgs Boson, for the Higgs Boson Machine Learning Challenge \cite{higgs-challenge}. With the aim of finding a logistic classification maximising the approximate median significance (AMS) objective function (\ref{AMS}), we conduct a tuning based on a two-stage procedure from \cite{kotlowski2014consistent}. This tuning strategy relies on a first stage of fitting the logistic model coefficients, and on a second stage of tuning the classification threshold on the basis of AMS. By showing that AMS values based on the two-stage procedure are significantly larger than the ones based on the standard logistic classification threshold, we deduce that the coefficients from the logistic model are still of use. Logistic regression is a simple model with easily interpretable coefficients; this is convenient settings in which the variables have a physical interpretation.
 
 \end{abstract}
 
@@ -65,7 +65,7 @@ Once the region has been fixed, the significance of the excess is determined usi
 
 \section{Problem Formulation}
 
-Let $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ the the training set, where $\bm{x}_i \in \mathbb{R}^d$ is a $d$-dimensional feature vector, $y_i \in \{\text{b,s}\}$ is the label, and $w_i \in \mathbb{R}^+$ is a non-negative weight. Let $\mathcal{S} = \{i : y_i = \text{s}\}$ and $\mathcal{B} = \{i : y_i = \text{b}\}$ be the index sets of signal and background events respectively, and let $n_\text{s} = |\mathcal{S}|$ and $n_\text{b} = |\mathcal{B}|$ be the number of simulated signal and background events. 
+Let $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ be the training set, where $\bm{x}_i \in \mathbb{R}^d$ is a $d$-dimensional feature vector, $y_i \in \{\text{b,s}\}$ is the label, and $w_i \in \mathbb{R}^+$ is a non-negative weight. Let $\mathcal{S} = \{i : y_i = \text{s}\}$ and $\mathcal{B} = \{i : y_i = \text{b}\}$ be the index sets of signal and background events respectively, and let $n_\text{s} = |\mathcal{S}|$ and $n_\text{b} = |\mathcal{B}|$ be the number of simulated signal and background events. 
 
 The simulated dataset also includes importance weights for each event. Since the objective function (\ref{AMS}) depends on the \textit{unnormalised sum} of weights, in order to make the setup invariant to the \textit{numbers} of simulated events $n_s$ and $n_b$, the sum across each set (test/training) and each class (signal/background) is set to be fixed, i.e.,
 \begin{equation}
@@ -115,34 +115,34 @@ Having decided a statistical model for classification, its parameters will be tu
 \label{classifier from f}
 h(\theta):=\operatorname{sgn}(f-\theta)\in \{-1,1\}
 \end{equation}
-One can therefore train and tune $f$ ``independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. For example, one could train $f$ in a logistic regression (i.e. train $f$ s.t. it minimises a logistic loss), and then, on a second stage, choose the classification threshold based on AMS. This approach is presented in \cite{kotlowski2014consistent}
+One can therefore train and tune $f$ ``independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. For example, one could train $f$ in a logistic regression (i.e. train $f$ such that it minimises a logistic loss), and then, on a second stage, choose the classification threshold based on AMS. This approach is presented in \cite{kotlowski2014consistent}
 \end{itemize}
 We will see that the two-stage maximisation is much more performant (in terms of AMS) than the direct one.
 
 \subsection{Two-stage maximisation}
 
-While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. This section is dedicated to the explanation of the two stage procedure for a  classifier $h:\mathcal{X}\to \{-1,1\}$, as defined in (\ref{classifier from f}) , where $\mathcal{X}$ denotes the features space, and \textbf{$f$ is trained by minimising a logistic loss}.\\
+While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. In the following, we explain the two stage procedure in more detail for a classifier $h:\mathcal{X}\to \{-1,1\}$, as defined in (\ref{classifier from f}) , where $\mathcal{X}$ denotes the features space, and \textbf{$f$ is trained by minimising a logistic loss}.\\
 
-By incorporating the weights to the probabilities, without loss of generality one may write  $s$ and $b$ from (\ref{s weights}) and (\ref{b weights}) as
+By incorporating the weights to the probabilities, without loss of generality one may write  $s$ (\ref{s weights}) and $b$ (\ref{b weights}) as
 
 $$s=s(h):=\mathbb{P}(h(\bm{X})=1,Y=1) \ \text{,} \ \ \ b=b(h):=\mathbb{P}(h(\bm{X})=-1,Y=1)$$
-where $\bm{X}$ denotes a random imput vector and $Y$ a random binary response. The paper justifies the two stage procedure explained above for logistic loss transformation of $f$, as follows. Given a classifier $h$ obtained from $f$ as in (\ref{classifier from f}), one can define the``AMS regret" as
+where $\bm{X}$ denotes a random imput vector and $Y$ a random binary response. \cite{kotlowski2014consistent} justifies the two stage procedure explained above for logistic loss transformation of $f$, as follows. Given a classifier $h$ obtained from $f$ as in (\ref{classifier from f}), one can define the \textit{AMS regret} as
 \begin{equation}
 \label{regret}
 R_{AMS}(h):= \text{AMS}^2(h^*)-\text{AMS}^2(h)
 \end{equation}
 where $$h^*:=\argmax_h \ \text{AMS}^2(h).$$
-Similarly, the``logistic regret" of $f$ is defined as
+Similarly, the \textit{logistic regret} of $f$ is defined as
 \begin{equation}
 \label{logistic regret}
 R_{log}(f):= L(f)-L(f^*)
 \end{equation}
-for the expected logistic loss transformation of $f$ 
+for the expected logistic loss transformation of $f$,
 \begin{equation}
 \label{eq: logloss}
-L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big]
+L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big],
 \end{equation}
-and $$f^*:=\argmin_f \ L(f)$$
+and $$f^*:=\argmin_f \ L(f).$$
 The formal justification of the idea of 
 \begin{itemize}
 \item training a logistic loss transformation of $f$, and
