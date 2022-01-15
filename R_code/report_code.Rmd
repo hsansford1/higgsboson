@@ -89,10 +89,10 @@ cv.logistic$measures.test
 
 ```
 Now, we fit a WLR model using the whole trainind data set and check how it performs on the test data.
-```{r}
+```{r, warning=FALSE}
 train_control <- trainControl(method = "cv", number = 10)
 
-fmodel <- train(Label ~ .,
+fmodel <- caret::train(Label ~ .,
                        data = st_train,
                        trControl = train_control,
                        method = "glm",
@@ -157,7 +157,7 @@ plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pc
 Now, using the plot above, we can set `theta_0 = 0.0001` and `theta_1=0.1` in the `threshold_CV` function.
 
 ```{r, warning=FALSE}
-theta_CV <- threshold_CV(st_train, st_train$Label, weights, theta_0=0.0001, theta_1=0.1, n=50)
+theta_CV <- threshold_CV(st_train, st_train$Label, weights, theta_0=0.0001, theta_1=0.1, n=100)
 theta_CV
 ```
 
@@ -170,66 +170,38 @@ train.pca <- prcomp(st_train[,1:30])
 summary(train.pca)
 screeplot(train.pca, type="lines")
 ```
-
+We can see that the first two PCA's account for the majority of the vaiance, but we shall keep the first three as a precaution.
 
 ```{r}
-
-
-
-
-
-#######################################################################
-
-#Threshold tuning after PCA-dimensional reduction
-
-st_train_pca <- as.data.frame(scale(df_train[1:30])) # standardise the variables
-train.pca <- prcomp(st_train_pca)
-summary(train.pca)
-screeplot(train.pca, type="lines")
-
-#the first pca has by far the highest variance
-#Let's try to keep the first 3 pca's (they have variance bigger than 2)
-
 st_train_dimred <- data.frame("PCA1"=train.pca$x[,1],"PCA2"=train.pca$x[,2],"PCA3"=train.pca$x[,3])
-st_train_dimred["Label"] <- as.factor(df_train$Label)
+st_train_dimred["Label"] <- st_train$Label
+```
 
+Now, we can perform the first stage of the two-stage procedure as above.
 
+```{r, warning=FALSE}
 trainIndex <- createDataPartition(st_train_dimred$Label, p = .8,
                                   list = FALSE,
                                   times = 1)
-head(trainIndex)
 
 Train <- st_train_dimred[ trainIndex,]
 Valid  <- st_train_dimred[-trainIndex,]
 
 
-#First stage: Logistic regression on Train: CV and sensitivity as metric
-
 weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
 weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
-
-
-#train_control <- trainControl(method = "cv", number = 10)
 
 logreg_weighted_pca <- caret::train(Label ~ .,
                                     data = Train,
                                     method = "glm",
-                                    #metric="sensitivity",
                                     weights = weights_Train,
                                     family=binomial()
 )
-
-
-
-
 print(logreg_weighted_pca)
-cm <- confusionMatrix(logreg_weighted_pca)
-TPR <- cm$table[2,2]/(cm$table[2,2]+cm$table[1,2]) #TPR - sensitivity
-FPR <- cm$table[2,1]/(cm$table[2,1]+cm$table[1,1])
-TPR
+```
 
-
-#Plot AMS for small values of threshold theta
+Now we can plot the AMS for varying values of the threshold theta.
+```{r}
 
 theta_vals <- as.data.frame(seq(0.0001, 0.05, length.out=500)) # generate small sample thresholds theta
 AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted_pca,Valid[,1:3],Valid[4], weights_Valid)) #compute AMS(theta)
@@ -239,12 +211,14 @@ max_theta <- theta_vals[which.max(AMS_vals),1]
 max_theta
 max_AMS <- AMS_vals[which.max(AMS_vals)]
 max_AMS
+```
+We can see that the peak occurs between very small values of theta, hence we try `theta_0=0.0001` and `theta_1=0.006` in the `threshold_CV` function.
 
-# Choose the threshold
+```{r}
 
-theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.006, k=5, n=200)
+theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.006, k=5, n=100)
 theta_CV  #less variance, both of theta and of AMS
-
+beep()
 
 ```
 
