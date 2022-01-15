@@ -168,30 +168,12 @@ AMS_weighted = function(truth, response, weights) {
 
 }
 
-# Can we delete this function since I have documented that labels should be 0/1?
-# Think it might be better to document functions that labels should be 0/1 because then our functions are more general for binary problems
-AMS_weighted_gen = function(truth, response, weights) {
-# more general version of AMS_weighted,
-# takes truth (actual outcome), response (predicted outcome), and weight vector
-# returns AMS
-  weights <- reweight(weights, truth, Ns(), Nb())
-# truth & response can be s/b or 1/0
-# both vectors should be same type
-  if((truth[1] == 's') | (truth[1] == 'b')){
-    s <- sum(weights[(truth == 's') & (response == 's')])
-    b <- sum(weights[(truth == 'b') & (response == 's')])
-  } else if((truth[1] == 1) | (truth[1] == 0)){
-    s <- sum(weights[(truth == 1) & (response == 1)])
-    b <- sum(weights[(truth == 0) & (response == 1)])
-  }
 
-  return(AMS_base(s, b))
-
-}
 
 #' Generate AMS measure to be used in mlr training
 #'
 #' @return AMS measure that can be used as a measure in functions in the `mlr` package, e.g. `crossval`
+#' @import mlr
 AMS_measure <- function(){
   AMS_mlr = makeMeasure(
     id = "AMS_weighted", minimize = FALSE,

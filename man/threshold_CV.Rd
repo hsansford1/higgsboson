@@ -4,7 +4,7 @@
 \alias{threshold_CV}
 \title{Cross-validation function for tuning threshold in logistic regression.}
 \usage{
-threshold_CV(df, label, weights, theta_0, theta_1, k = 5, n = 50)
+threshold_CV(df, label, weights, theta_0, theta_1, k = 5, n = 200)
 }
 \arguments{
 \item{df}{Data-frame to perform cross-validation on.}

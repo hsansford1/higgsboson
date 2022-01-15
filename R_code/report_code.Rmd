@@ -132,7 +132,7 @@ Train <- st_train[ trainIndex,]
 Valid  <- st_train[-trainIndex,]
 ```
 
-We then fit a WLR model using the new training set `Train`, before visualising how the AMS varies with threshold `theta`. This informs the users decision of how to set the parameters `theta_0` and `theta_1` in the function `threshold_CV` in the `higgsboson` package. We can see that the peak definitely occurs in the range 0 to 0.1.
+We then fit a WLR model using the new training set `Train`, before visualising how the AMS varies with threshold `theta`. This informs the users decision of how to set the parameters `theta_0` and `theta_1` in the function `threshold_CV` in the `higgsboson` package (use `??threshold_CV` for help on this function). We can see that the peak definitely occurs in the range 0 to 0.1.
 ```{r, warning=FALSE}
 weights_Train <- reweight(weights[trainIndex], Train$Label, Ns(), Nb())
 weights_Valid <- reweight(weights[-trainIndex], Valid$Label, Ns(), Nb())
@@ -154,12 +154,27 @@ plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pc
 
 ```
 
+Now, using the plot above, we can set `theta_0 = 0.0001` and `theta_1=0.1` in the `threshold_CV` function.
+
+```{r, warning=FALSE}
+theta_CV <- threshold_CV(st_train, st_train$Label, weights, theta_0=0.0001, theta_1=0.1, n=50)
+theta_CV
+```
+
+### Principal-Component Analysis
+
+Alternatively, we can perform PCA on the data set before fitting a model and tuning the threshold. This will reduce the dimension of the data set, improving the speed of the function and, hopefully, reduce any overfitting of the more complicated model.
+
+```{r}
+train.pca <- prcomp(st_train[,1:30])
+summary(train.pca)
+screeplot(train.pca, type="lines")
+```
 
 
 ```{r}
 
-theta_CV <- threshold_CV(st_train, df_train$Label, weights, theta_0=0.0001, theta_1=0.1)
-theta_CV
+
 
 
 
