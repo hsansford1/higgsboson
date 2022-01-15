@@ -150,8 +150,6 @@ theta_vals <- as.data.frame(seq(0.0001, 0.5, length.out=500)) # generate small s
 AMS_vals <- apply(theta_vals, 1, AMS(logreg_weighted2,Valid[,1:30],Valid[31], weights_Valid)) #compute AMS(theta)
 plot(as.array(unlist(theta_vals)), AMS_vals, xlab="theta", ylab="AMS(theta)", pch=19) #plot it
 
-
-
 ```
 
 Now, using the plot above, we can set `theta_0 = 0.0001` and `theta_1=0.1` in the `threshold_CV` function.
@@ -160,6 +158,23 @@ Now, using the plot above, we can set `theta_0 = 0.0001` and `theta_1=0.1` in th
 theta_CV <- threshold_CV(st_train, st_train$Label, weights, theta_0=0.0001, theta_1=0.1, n=100)
 theta_CV
 ```
+
+We can now use the threshold found in the cross-validation to find our predictions on the test set and the resulting AMS.
+
+```{r}
+theta <- theta_CV$max_theta
+
+probabilities <- predict(logreg_weighted2$finalModel, st_test[,1:30], type = "response")
+
+predicted.classes <- ifelse(probabilities > theta, 1, 0)
+
+Label_valid <-  as.array(unlist(st_test[,31]))
+Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
+
+AMS_weighted(Label_valid, predicted.classes, weights_test)
+
+```
+
 
 ### Principal-Component Analysis
 
@@ -214,11 +229,23 @@ max_AMS
 ```
 We can see that the peak occurs between very small values of theta, hence we try `theta_0=0.0001` and `theta_1=0.006` in the `threshold_CV` function.
 
-```{r}
+```{r, warning=FALSE}
 
 theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.006, k=5, n=100)
 theta_CV  #less variance, both of theta and of AMS
-beep()
+```
+Finally, we can now use the threshold found in the cross-validation to find our predictions on the test set and the resulting AMS.
+```{r}
+theta <- theta_CV$max_theta
+
+probabilities <- predict(logreg_weighted_pca$finalModel, st_test[,1:30], type = "response")
+
+predicted.classes <- ifelse(probabilities > theta, 1, 0)
+
+Label_valid <-  as.array(unlist(st_test[,31]))
+Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
+
+AMS_weighted(Label_valid, predicted.classes, weights_test)
 
 ```
 

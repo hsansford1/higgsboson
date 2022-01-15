@@ -41,7 +41,7 @@
 
 \begin{abstract}
 
-We investigate the tuning of a logistic regression for finding evidence of the decay into \textit{fermion} pairs of the Higgs Boson, for the Higgs Boson Machine Learning Challenge \cite{higgs-challenge}. With the aim of finding a logistic classification maximising the AMS objective function \ref{AMS}, we show a tuning based on a two-stage procedure from \cite{kotlowski2014consistent}. This tuning strategy relies on a first stage where we fit the logistic model coefficients, and on a second stage where we tune a classification threshold on the basis of AMS. Being able to show that AMS values based on the two-stage procedure are significantly bigger than the ones based on the standard logistic classification threshold, we can state that the coefficients from the logistic model can still be considered. Logistic regression is a simple model with a straightforward coefficients interpretation, which is convenient for a setting in which the variables have a physical interpretation.
+We investigate the tuning of a logistic regression for finding evidence of the decay into \textit{fermion} pairs of the Higgs Boson, for the Higgs Boson Machine Learning Challenge \cite{higgs-challenge}. With the aim of finding a logistic classification maximising the approximate median significance (AMS) objective function (\ref{AMS}), we conduct a tuning based on a two-stage procedure from \cite{kotlowski2014consistent}. This tuning strategy relies on a first stage of fitting the logistic model coefficients, and on a second stage of tuning the classification threshold on the basis of AMS. By showing that AMS values based on the two-stage procedure are significantly larger than the ones based on the standard logistic classification threshold, we deduce that the coefficients from the logistic model are still of use. Logistic regression is a simple model with easily interpretable coefficients; this is convenient settings in which the variables have a physical interpretation.
 
 \end{abstract}
 
@@ -65,7 +65,7 @@ Once the region has been fixed, the significance of the excess is determined usi
 
 \section{Problem Formulation}
 
-Let $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ the the training set, where $\bm{x}_i \in \mathbb{R}^d$ is a $d$-dimensional feature vector, $y_i \in \{\text{b,s}\}$ is the label, and $w_i \in \mathbb{R}^+$ is a non-negative weight. Let $\mathcal{S} = \{i : y_i = \text{s}\}$ and $\mathcal{B} = \{i : y_i = \text{b}\}$ be the index sets of signal and background events respectively, and let $n_\text{s} = |\mathcal{S}|$ and $n_\text{b} = |\mathcal{B}|$ be the number of simulated signal and background events. 
+Let $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ be the training set, where $\bm{x}_i \in \mathbb{R}^d$ is a $d$-dimensional feature vector, $y_i \in \{\text{b,s}\}$ is the label, and $w_i \in \mathbb{R}^+$ is a non-negative weight. Let $\mathcal{S} = \{i : y_i = \text{s}\}$ and $\mathcal{B} = \{i : y_i = \text{b}\}$ be the index sets of signal and background events respectively, and let $n_\text{s} = |\mathcal{S}|$ and $n_\text{b} = |\mathcal{B}|$ be the number of simulated signal and background events. 
 
 The simulated dataset also includes importance weights for each event. Since the objective function (\ref{AMS}) depends on the \textit{unnormalised sum} of weights, in order to make the setup invariant to the \textit{numbers} of simulated events $n_s$ and $n_b$, the sum across each set (test/training) and each class (signal/background) is set to be fixed, i.e.,
 \begin{equation}
@@ -115,38 +115,38 @@ Having decided a statistical model for classification, its parameters will be tu
 \label{classifier from f}
 h(\theta):=\operatorname{sgn}(f-\theta)\in \{-1,1\}
 \end{equation}
-One can therefore train and tune $f$ ``independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. For example, one could train $f$ in a logistic regression (i.e. train $f$ s.t. it minimises a logistic loss), and then, on a second stage, choose the classification threshold based on AMS. This approach is presented in \cite{kotlowski2014consistent}
+One can therefore train and tune $f$ ``independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. For example, one could train $f$ in a logistic regression (i.e. train $f$ such that it minimises a logistic loss), and then, on a second stage, choose the classification threshold based on AMS. This approach is presented in \cite{kotlowski2014consistent}
 \end{itemize}
 We will see that the two-stage maximisation is much more performant (in terms of AMS) than the direct one.
 
 \subsection{Two-stage maximisation}
 
-While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. This section is dedicated to the explanation of the two stage procedure for a  classifier $h:\mathcal{X}\to \{-1,1\}$, as defined in (\ref{classifier from f}) , where $\mathcal{X}$ denotes the features space, and \textbf{$f$ is trained by minimising a logistic loss}.\\
+While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. In the following, we explain the two stage procedure in more detail for a classifier $h:\mathcal{X}\to \{-1,1\}$, as defined in (\ref{classifier from f}) , where $\mathcal{X}$ denotes the features space, and \textbf{$f$ is trained by minimising a logistic loss}.\\
 
-By incorporating the weights to the probabilities, without loss of generality one may write  $s$ and $b$ from (\ref{s weights}) and (\ref{b weights}) as
+By incorporating the weights to the probabilities, without loss of generality one may write  $s$ (\ref{s weights}) and $b$ (\ref{b weights}) as
 
 $$s=s(h):=\mathbb{P}(h(\bm{X})=1,Y=1) \ \text{,} \ \ \ b=b(h):=\mathbb{P}(h(\bm{X})=-1,Y=1)$$
-where $\bm{X}$ denotes a random imput vector and $Y$ a random binary response. The paper justifies the two stage procedure explained above for logistic loss transformation of $f$, as follows. Given a classifier $h$ obtained from $f$ as in (\ref{classifier from f}), one can define the``AMS regret" as
+where $\bm{X}$ denotes a random imput vector and $Y$ a random binary response. \cite{kotlowski2014consistent} justifies the two stage procedure explained above for logistic loss transformation of $f$, as follows. Given a classifier $h$ obtained from $f$ as in (\ref{classifier from f}), one can define the \textit{AMS regret} as
 \begin{equation}
 \label{regret}
 R_{AMS}(h):= \text{AMS}^2(h^*)-\text{AMS}^2(h)
 \end{equation}
 where $$h^*:=\argmax_h \ \text{AMS}^2(h).$$
-Similarly, the``logistic regret" of $f$ is defined as
+Similarly, the \textit{logistic regret} of $f$ is defined as
 \begin{equation}
 \label{logistic regret}
 R_{log}(f):= L(f)-L(f^*)
 \end{equation}
-for the expected logistic loss transformation of $f$ 
+for the expected logistic loss transformation of $f$,
 \begin{equation}
 \label{eq: logloss}
-L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big]
+L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big],
 \end{equation}
-and $$f^*:=\argmin_f \ L(f)$$
+and $$f^*:=\argmin_f \ L(f).$$
 The formal justification of the idea of 
 \begin{itemize}
 \item training a logistic loss transformation of $f$, and
-\item finding the threshold $\theta$ in \ref{classifier from f} by maximising the AMS on a second stage
+\item finding the threshold $\theta$ in (\ref{classifier from f}) by maximising the AMS on a second stage
 \end{itemize}
 comes from the following theorem.
 
@@ -170,7 +170,7 @@ That is, the AMS regret of classifier $h(\theta)$ is upper bounded by the logist
 Training $f$ by minimising a logistic loss is particularly suited for a classification task. For example, it allows us to train (on the first stage) models such as a logistic regression. 
 \end{remark}
 \begin{remark}
-As far as logistic regression is concerned, recall that after model's coefficients $\bm{w}$ have been estimated, classification for a new observation $y_0$ can be done by setting  $\hat{\bm{w}}'\bm{x}_0>\theta$ for some suitable $\theta \in \mathbb{R}$. In a "proper" logistic regression, $\theta$ is directly set to $0$. Here we choose it during a second stage via maximising AMS.
+As far as logistic regression is concerned, recall that after model's coefficients $\bm{w}$ have been estimated, classification for a new observation $y_0$ can be done by setting  $\hat{\bm{w}}'\bm{x}_0>\theta$ for some suitable $\theta \in \mathbb{R}$. In a `proper' logistic regression, $\theta$ is directly set to $0$. Here we choose it during a second stage via maximising AMS.
 \end{remark}
 
 Our aim is to tune a logistic regression. The theoretical set-up of logistic regression can be found below.
@@ -187,15 +187,15 @@ $$\hat{y}=\argmin_{y_0}\mathbb{E}_{p(y|\x)}(L(y,y_0)|\x)$$
 and by \textit{inferring $p(y|\x)$ directly}. \\
 
 
-Specifically, it models the log density ratio as 
+\noindent Specifically, it models the log density ratio as 
 
 $$\log\Big(\frac{p(\x|y=-1)p(y=-1)}{p(\x|y=1)p(y=1)}\Big)\overset{model}{=}f(\x,\bbeta):=\langle \bbeta,\x \rangle+\beta_0$$ 
-
-i.e. models the "log-odds"  by a linear model (the term on the left of the proportionality symbol is added for intuition). In this way we can write 
+i.e. models the \textit{log-odds}  by a linear model (the term on the left of the proportionality symbol is added for intuition). In this way we can write 
 \begin{align}
 p(y|\x;\bbeta)=\sigma(f(\x,\bbeta)y)
 \end{align}
-for a so-called "activation/logistic function" $\sigma(t):=\frac{1}{1+\exp(-t)}$.  \\
+for a so-called `activation/logistic function' $\sigma(t):=\frac{1}{1+\exp(-t)}$.  \\
+
 ML estimates of $\bbeta$ are computed from the log-likelihood as $$\bbeta_{ML}=\argmax_{\bbeta}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)$$
 
 \begin{remark}
@@ -203,14 +203,14 @@ Notice that
 \begin{align*}
 \argmax_{\bbeta}\sum_{i\in D}\log\sigma(f(\x_i,\bbeta)y_i)&=\argmax_{\bbeta}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \}) \\
 &=\argmin_{\bbeta}\sum_{i\in D}\log(1+\exp\{- y_i\bbeta'\x_i\})
-\end{align*} so that we are consistent with Kotlowsky paper by minimising a log loss as in equation \ref{eq: logloss} (of course, we are minimising its sample counterpart).
+\end{align*} so that we are consistent with \cite{kotlowski2014consistent} by minimising a log loss as in equation (\ref{eq: logloss}) (of course, we are minimising its sample counterpart).
 \end{remark}
 \subsubsection{Weighted logistic regression}
 \begin{remark}
 In this dataset weights have an essential role in rebalancing the likelihood of signals and background events, as data have been artificially simulated. We will therefore fit the model with a weighted logistic regression.
 \end{remark}
 
-While unweighted logistic regression maximises 
+\noindent While unweighted logistic regression maximises 
 $$\hat{\bbeta}=\argmax_{\bbeta}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \}),$$
 weighted logistic regression takes into account weights $w_i$ by weighting the corresponding observations, finding
 \begin{equation}
@@ -224,29 +224,25 @@ $$
 penalises the L1 and L2 norms of the coefficients. This was implemented for both the direct and two-stage approaches with $\alpha, \lambda$ selected by cross validation. In both cases $\lambda=0$ -- the unpenalised model -- performed best. Here the training dataset (250000 observations) was very large compared to the number of features (30); with higher-dimensional models an elastic net regression may be beneficial.
 \end{remark}
 
-\subsection{Generalising logistic regression's decision function}
+\subsection{Generalising the logistic regression decision function}
 \label{app:decision function}
 
-After ML estimates $\hat{\bbeta}$ have been computed, classification of an observation $\x_0$ can be based on whether $p(y=1|\x;\bbeta)$ is bigger than $p(y=-1|\x;\bbeta)$. That is,
+After ML estimates $\hat{\bbeta}$ have been computed, classification of an observation $\x_0$ can be based on which probability is larger out of $p(y=1|\x_0;\bbeta)$ and $p(y=-1|\x_0;\bbeta)$. That is,
 \begin{align*}
-\hat{y}_{\x_0}=1 \ \text{if} \ \sigma(f(\x_0,\hat{\bbeta}))>\sigma(-f(\x_0,\hat{\bbeta})) \\
+\hat{y}_{\x_0}=1 \ &\text{if} \ \sigma(f(\x_0,\hat{\bbeta}))>\sigma(-f(\x_0,\hat{\bbeta})) \\
 \text{or, equivalently,} \
-\hat{y}_{\x_0}=1  \ \text{if} \ \log \Big( \frac{\sigma(f(\x_0,\hat{\bbeta}))}{\sigma(-f(\x_0,\hat{\bbeta}))}\Big)>0
+\hat{y}_{\x_0}=1  \ &\text{if} \ \sigma(f(\x_0,\hat{\bbeta}))> 0.5
 \end{align*} 
+On the other hand, we can classify $\x_0$ to class -1 if $\sigma(f(\x_0,\hat{\bbeta}))< 0.5$. \\
 
-We know that $$\log \Big( \frac{\sigma(f(\x_0,\hat{\bbeta}))}{\sigma(-f(\x_0,\hat{\bbeta}))}\Big)\propto \langle\hat{\bbeta},\x_0\rangle+\hat{\beta}_0$$
-Therefore, classification from standard logistic regression can also be made as follows
-
-\begin{align*}
-\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \langle\hat{\bbeta},\x_0\rangle+\hat{\beta}_0>0 \  \text{(resp.} <0).
-\end{align*}
+\noindent Hence, we classify observations based on whether the fitted probability that the class $y=1$, falls either side of the \textit{threshold} $\theta = 0.5$.
 
 \begin{remark}
-The two-stage procedure "generalises" this classification method by admitting that there is a $\theta\in \mathbb{R}$, possibly different from $0$, such that the classification based on 
+The two-stage procedure `generalises' this classification method by admitting that there is a $\theta\in (0,1)$, possibly different from $0.5$, such that the classification based on 
 \begin{align*}
-\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \langle\hat{\bbeta},\x_0\rangle+\hat{\beta}_0>\theta \  \text{(resp.} <\theta).
+\hat{y}_{\x_0}=1 \ \text{(resp. -1) if}\ \sigma(f(\x_0,\hat{\bbeta}))> \theta \  \text{(resp.} <\theta).
 \end{align*}
-could be "better" (for some purposes) than the standard logistic regression one. 
+could be `better' (for different evaluation metrics) than the standard logistic regression one. 
 \end{remark}
 
 
@@ -254,10 +250,7 @@ could be "better" (for some purposes) than the standard logistic regression one.
 
 \subsection{AMS as direct measure - Cross Validation}
 
-As first attempt, a standard (i.e., $\theta=0.5$) weighted logistic regression (WLR) has been fitted on the train set. Cross validation suggested that we can expect to get an AMS in the range [0.15, 0.41] on a test set. This is a relatively small value compared to results in following sections. Many attempts result in a AMS value larger than the upper bound found in cross-validation on test sets.
-% Do you mean attempts using other model fitting strategies or the same strategt?%
-
-Using the entire set of training data to fit the WLR model, we get an AMS value of 0.18 on the test data set.
+As first attempt, a standard (i.e., $\theta=0.5$) weighted logistic regression (WLR) has been fitted on the train set. Cross validation suggested that we can expect to get an AMS in the range [0.15, 0.41] on a test set. This is a relatively small value compared to results in following sections. Using the entire set of training data to fit the WLR model, we get an AMS value of 0.18 on the test data set.
 
 \subsection{Two-stage maximisation}
 
@@ -281,7 +274,7 @@ The validation set $D_v$ has been used to select the value of the threshold $\th
 \label{fig: train_tuned_theta}
 \end{figure}
 
-Figure \ref{fig: train_tuned_theta} shows that AMS is maximised for small values of $\theta$ (smaller than 0.02). The maximum value of AMS is around $1.45$ - much higher than the one found with a standard logistic regression. A simple Monte carlo maximisation of $\text{AMS}(\theta)$ leads the optimal threshold $\hat{\theta}$, which is generally found to be between around $0.004$. \\
+Figure \ref{fig: train_tuned_theta} shows that AMS is maximised for small values of $\theta$ (smaller than 0.02). The maximum value of AMS is around $1.45$ - much higher than the one found with a standard logistic regression. A simple Monte carlo maximisation of $\text{AMS}(\theta)$ finds the optimal threshold $\hat{\theta}$, which is generally found to be between around $0.004$. The red lines in Figure \ref{fig: train_tuned_theta} represent $\pm$one standard deviation from the mean (using cross-validation). \\
 
 The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's (see Figure \ref{fig: screeplot}).
 \begin{figure}[H]
@@ -300,15 +293,15 @@ We decided to use the first $3$ PC's as a new dataset, and repeat the procedure 
 \label{fig: tuned_pca}
 \end{figure}
 
-One can see that the AMS on validation set on the PC's is much more "peaked". In particular, AMS variance is lower than before, and the range of suitable thetas is much shorter too. This might be a sign of overfitting. $\hat{\theta}_{pc}$ is almost always $0.0017$.
+One can see that the AMS on validation set on the PC's is much more `peaked'. In particular, AMS variance is lower than before, and the range of suitable thetas is much shorter too. This might be a sign of underfitting due to the use of only three PCs. $\hat{\theta}_{pc}$ is almost always $0.0017$.
 
 \subsection{Results on test set}
 
-It has been already said that a standard logistic regression on test set reaches an AMS of about $0.18$, which is a very low performance. \\
+It has already been said that a standard logistic regression on test set reaches an AMS of about $0.18$, which is a very low performance. \\
 
-On the contrary, the two stage procedure has a much better performance on test set. With the threshold theta suggested from the second stage procedure on all the features, AMS on test set is about $1.5$, which is a big improvement. With the threshold suggested after PCA, we get an AMS of about $1.37$. This is still much better than using a standard logistic regression classification rule, but smaller than for the threshold suggested by the original training set. This, as said before, may be connected to some overfitting - the range of suggested theta's was much shorter than before dimensional reduction.\\
+On the contrary, the two stage procedure has a much better performance on the test set. With the threshold theta suggested from the second stage procedure on all the features, AMS on the test set is about $1.5$, which is a big improvement. With the threshold suggested after PCA, we get an AMS of about $1.37$. This is still much better than using a standard logistic regression classification rule, but smaller than for the threshold suggested by the original training set. This, as said before, may be connected to the model being too simplified - the range of suggested theta's was much shorter than before dimensional reduction.\\
 
-There is something else suggesting that the two-stage procedure allows us to pick a threshold which is suited for the test set too. In Figure \ref{fig: AMS on test}, AMS values from predictions on test set are plotted for different thetas. It is clear that few values of theta lead to a high value of AMS, and among them we find the ones suggested from the second stage of our procedure. 
+There is further evidence suggesting that the two-stage procedure allows us to pick a threshold which is suited for the test set too. In Figure \ref{fig: AMS on test}, AMS values from predictions on test set are plotted for different thetas. It is clear that few values of theta lead to a high value of AMS, and among them we find the ones suggested from the second stage of our procedure. 
 
 \begin{figure}[H]
 \centering
@@ -319,7 +312,7 @@ There is something else suggesting that the two-stage procedure allows us to pic
 
 \subsection{Discussion}
 
-The developments above go in redefining the use of a logistic regression for the Higgs Boson decay classification problem for AMS maximisation. The winning solution of the challenge leads, using a complicated black box model with many neural networks, to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that being the resulting AMS (1.5) after the two-stage procedure much higher than the one for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems to not overfit: AMS values on train and test set are very close.
+The developments above go in redefining the use of a logistic regression for the Higgs Boson decay classification problem for AMS maximisation. The winning solution of the challenge leads, using a complicated black box model with many neural networks, to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that since the resulting AMS (1.5) after the two-stage procedure was much higher than for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems to not overfit: AMS values on train and test set are very close.
 
 
 \bibliographystyle{plain}
