@@ -174,9 +174,9 @@ AMS_weighted = function(truth, response, weights) {
 #'
 #' @return AMS measure that can be used as a measure in functions in the `mlr` package, e.g. `crossval`
 #' @import mlr
+#' @export
 AMS_measure <- function(){
-  library(mlr)
-  AMS_mlr = mlr::makeMeasure(
+  AMS_mlr = makeMeasure(
     id = "AMS_weighted", minimize = FALSE,
     properties = c("classif"),
     name = "Approximate median significance",
