@@ -159,6 +159,23 @@ theta_CV <- threshold_CV(st_train, st_train$Label, weights, theta_0=0.0001, thet
 theta_CV
 ```
 
+We can now use the threshold found in the cross-validation to find our predictions on the test set and the resulting AMS.
+
+```{r}
+theta <- theta_CV$max_theta
+
+probabilities <- predict(logreg_weighted2$finalModel, st_test[,1:30], type = "response")
+
+predicted.classes <- ifelse(probabilities > theta, 1, 0)
+
+Label_valid <-  as.array(unlist(st_test[,31]))
+Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
+
+AMS_weighted(Label_valid, predicted.classes, weights_test)
+
+```
+
+
 ### Principal-Component Analysis
 
 Alternatively, we can perform PCA on the data set before fitting a model and tuning the threshold. This will reduce the dimension of the data set, improving the speed of the function and, hopefully, reduce any overfitting of the more complicated model.
@@ -216,5 +233,19 @@ We can see that the peak occurs between very small values of theta, hence we try
 
 theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=weights, theta_0=0.0001, theta_1=0.006, k=5, n=100)
 theta_CV  #less variance, both of theta and of AMS
+```
+Finally, we can now use the threshold found in the cross-validation to find our predictions on the test set and the resulting AMS.
+```{r}
+theta <- theta_CV$max_theta
+
+probabilities <- predict(logreg_weighted_pca$finalModel, st_test[,1:30], type = "response")
+
+predicted.classes <- ifelse(probabilities > theta, 1, 0)
+
+Label_valid <-  as.array(unlist(st_test[,31]))
+Label_valid <- as.numeric(levels(Label_valid))[Label_valid] #convert from factor to numeric
+
+AMS_weighted(Label_valid, predicted.classes, weights_test)
+
 ```
 

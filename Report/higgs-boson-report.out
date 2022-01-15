@@ -6,7 +6,7 @@
 \BOOKMARK [2][-]{subsection.3.1}{Two-stage maximisation}{section.3}% 6
 \BOOKMARK [2][-]{subsection.3.2}{Logistic regression}{section.3}% 7
 \BOOKMARK [3][-]{subsubsection.3.2.1}{Weighted logistic regression}{subsection.3.2}% 8
-\BOOKMARK [2][-]{subsection.3.3}{Generalising logistic regression's decision function}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.3}{Generalising the logistic regression decision function}{section.3}% 9
 \BOOKMARK [1][-]{section.4}{Model fitting}{}% 10
 \BOOKMARK [2][-]{subsection.4.1}{AMS as direct measure - Cross Validation}{section.4}% 11
 \BOOKMARK [2][-]{subsection.4.2}{Two-stage maximisation}{section.4}% 12
