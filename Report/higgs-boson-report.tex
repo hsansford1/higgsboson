@@ -41,7 +41,7 @@
 
 \begin{abstract}
 
-We investigate the tuning of a logistic regression for finding evidence of the decay into \textit{fermion} pairs of the Higgs Boson, for the Higgs Boson Machine Learning Challenge \cite{higgs-challenge}. With the aim of finding a logistic classification maximising the approximate median significance (AMS) objective function (\ref{AMS}), we conduct a tuning based on a two-stage procedure from \cite{kotlowski2014consistent}. This tuning strategy relies on a first stage of fitting the logistic model coefficients, and on a second stage of tuning the classification threshold on the basis of AMS. By showing that AMS values based on the two-stage procedure are significantly larger than the ones based on the standard logistic classification threshold, we deduce that the coefficients from the logistic model are still of use. Logistic regression is a simple model with easily interpretable coefficients; this is convenient settings in which the variables have a physical interpretation.
+We investigate the tuning of a logistic regression for finding evidence of the decay into \textit{fermion} pairs of the Higgs boson, for the Higgs Boson Machine Learning Challenge \cite{higgs-challenge}. With the aim of finding a logistic classification maximising the approximate median significance (AMS) objective function (\ref{AMS}), we conduct a tuning based on a two-stage procedure from \cite{kotlowski2014consistent}. This tuning strategy relies on a first stage of fitting the logistic model coefficients, and on a second stage of tuning the classification threshold on the basis of AMS. By showing that AMS values based on the two-stage procedure are significantly larger than the ones based on the standard logistic classification threshold, we deduce that the coefficients from the logistic model are still of use. Logistic regression is a simple model with easily interpretable coefficients; this is convenient in settings where which the variables have a physical interpretation.
 
 \end{abstract}
 
@@ -49,12 +49,12 @@ We investigate the tuning of a logistic regression for finding evidence of the d
 
 \subsection{Background}
 
-The Higgs boson can \textit{decay} through various different processes, producing other particles in the process. In physics, one calls a decay into specific particles a \textit{channel}. Until fairly recently, the Higgs boson had been seen only in boson pair decay channels. It is now of importance to seek evidence on the decay into \textit{fermion} pairs, specifically \textit{tau-leptons} or \textit{b-quarks}, and to measure their characteristics \cite{higgs-challenge}. The ATLAS experiment \cite{ATLAS-experiment} was the first to report evidence of the \textit{H} to tau-tau channel and the goal of this report is to improve on this analysis.
+The Higgs boson can \textit{decay} through various different processes, producing other particles in the process. In physics, one calls a decay into specific particles a \textit{channel}. Until fairly recently, the Higgs boson had been seen only in boson pair decay channels. It is now of importance to seek evidence on the decay into \textit{fermion} pairs, specifically \textit{tau-leptons} or \textit{b-quarks}, and to measure their characteristics \cite{higgs-challenge}. The ATLAS experiment \cite{ATLAS-experiment} was the first to report evidence of the Higgs boson to tau-tau channel and the goal of this report is to improve on this analysis.
 
 
 \subsection{Overview}
 
-The Atlas experiment at CERN provided simulated data that was used to optimise the analysis of the Higgs boson. In the Large Hadron Collider (LHC), proton bunches are accelerated in both directions on a circular trajectory. This results in some of the protons colliding as the bunches cross the ATLAS detector (called an \textit{event}), which produces hundreds of millions of proton-proton collisions per second. The particles resulting from each event are detected by sensors and, from this raw data, certain real-valued features are estimated \cite{higgs-challenge}.
+The ATLAS experiment at CERN provided simulated data that was used to optimise the analysis of the Higgs boson. In the Large Hadron Collider, proton bunches are accelerated in both directions on a circular trajectory. This results in some of the protons colliding as the bunches cross the ATLAS detector (called an \textit{event}), which produces hundreds of millions of proton-proton collisions per second. The particles resulting from each event are detected by sensors and, from this raw data, certain real-valued features are estimated \cite{higgs-challenge}.
 
 Most of the uninteresting events (called the \textit{background}) are discarded using a real-time multi-stage cascade classifier. However, many of the remaining events represent known processes that are also known as \textit{background}. Our aim is to find the region of the feature space in which there is a significant excess of events compared to what known background processes can explain (called \textit{signal}).
 
@@ -67,13 +67,13 @@ Once the region has been fixed, the significance of the excess is determined usi
 
 Let $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ be the training set, where $\bm{x}_i \in \mathbb{R}^d$ is a $d$-dimensional feature vector, $y_i \in \{\text{b,s}\}$ is the label, and $w_i \in \mathbb{R}^+$ is a non-negative weight. Let $\mathcal{S} = \{i : y_i = \text{s}\}$ and $\mathcal{B} = \{i : y_i = \text{b}\}$ be the index sets of signal and background events respectively, and let $n_\text{s} = |\mathcal{S}|$ and $n_\text{b} = |\mathcal{B}|$ be the number of simulated signal and background events. 
 
-The simulated dataset also includes importance weights for each event. Since the objective function (\ref{AMS}) depends on the \textit{unnormalised sum} of weights, in order to make the setup invariant to the \textit{numbers} of simulated events $n_s$ and $n_b$, the sum across each set (test/training) and each class (signal/background) is set to be fixed, i.e.,
+The simulated dataset also includes importance weights for each event. Since the objective function (\ref{AMS}) depends on the \textit{unnormalised sum} of weights, in order to make the setup invariant to the \textit{numbers} of simulated events $n_s$ and $n_b$, the sum across each set (test/training) and each class (signal/background) is set to be fixed, i.e.
 \begin{equation}
 	\sum_{i \in \mathcal{S}} w_i = N_\text{s} \hspace{10pt} \text{and} \hspace{10pt} \sum_{i \in \mathcal{B}} w_i = N_\text{b}.
 \end{equation}
 These normalisation constants $N_\text{s}$ and $N_\text{b}$ are simply the \textit{expected total number} of signal and background events, respectively, during the time interval of the data taking. The individual weights are then proportional to the conditional densities,
 $$ p_\text{s}(\bm{x}_i) = p(\bm{x}_i|y=\text{s}) \hspace{10pt} \text{and} \hspace{10pt} p_\text{b}(\bm{x}_i) = p(\bm{x}_i|y=\text{b}), $$
-divided by the instrumental densities $q_\text{s}(\bm{x}_i)$ and $q_\text{b}(\bm{x}_i)$, i.e.,
+divided by the instrumental densities $q_\text{s}(\bm{x}_i)$ and $q_\text{b}(\bm{x}_i)$, i.e.
 \begin{equation}
 	w_i \propto \begin{cases}
 	p_\text{s}(\bm{x}_i)/ q_\text{s}(\bm{x}_i), & \text{if} \hspace{10pt} y_i= \text{s}. \\
@@ -82,14 +82,14 @@ divided by the instrumental densities $q_\text{s}(\bm{x}_i)$ and $q_\text{b}(\bm
 \end{equation}
 
 
-Now, let $g: \mathbb{R}^d \to \{\text{b,s}\}$ be a classifier. Let the \textit{selection region} $\mathcal{G} = \{\bm{x}: g(\bm{x}) = \text{s}\}$ be the set of points classified as signal, and let $\hat{\mathcal{G}}$ denote the \textit{index set} of points that $g$ classifies as signal, i.e.,
+Now, let $g: \mathbb{R}^d \to \{\text{b,s}\}$ be a classifier. Let the \textit{selection region} $\mathcal{G} = \{\bm{x}: g(\bm{x}) = \text{s}\}$ be the set of points classified as signal, and let $\hat{\mathcal{G}}$ denote the \textit{index set} of points that $g$ classifies as signal, i.e.
 $$ \hat{\mathcal{G}} = \{i:f(\bm{x}_i) \in \mathcal{G}\} = \{i : g(\bm{x}_i) = \text{s}\}. $$
 Then we have that
 \begin{equation}
 \label{s weights}
 	s = \sum_{i \in \mathcal{S} \cap \hat{\mathcal{G}}} w_i
 \end{equation}
-is an unbiased estimator of the expected number of signal events selected by $g$, and similarly,
+is an unbiased estimator of the expected number of signal events selected by $g$ and similarly,
 \begin{equation}
 \label{b weights}
 b = \sum_{i \in \mathcal{B} \cap \hat{\mathcal{G}}} w_i
@@ -103,9 +103,11 @@ High-energy physicists suggest the use of the \textit{approximate median signifi
 \end{equation}
 to optimise the selection region for discovery significance, where $b_\text{reg}$ is a regularisation term suggested to be set to $b_\text{reg}=10$. Hence, our aim is simply to train a classifier $g$ based on the training data $\mathcal{D}$ with the goal of maximising the AMS on some unseen test data.
 
+The ATLAS experiment dataset (SHOULD WE CITE THE ACTUAL DATASET?) provided for the Higgs Boson Machine Learning Challenge comprises 250000 training samples and 550000 testing samples.
+
 \section{Maximising the AMS}
 
-Having decided a statistical model for classification, its parameters will be tuned by maximising the AMS. This can be done in two ways.
+Having specified a statistical model for classification, its parameters will be tuned by maximising the AMS. This can be done in two ways.
 
 \begin{itemize}
 \item \textbf{Direct maximisation}: One can consider the AMS as an error/objective measure in a cross validation procedure. So the model will be tuned by a cross validation (cv) procedure by looking at the coefficients which directly maximise the AMS.
@@ -113,7 +115,7 @@ Having decided a statistical model for classification, its parameters will be tu
 \item \textbf{Two-stage maximisation}: Given a real-valued function $f$ (e.g. a linear $f(\bm{w},\bm{x})=\bm{w}'\bm{x}$), one can always get a classification model by setting a threshold $\theta \in A\subset \mathbb{R}$ and a classifier
 \begin{equation}
 \label{classifier from f}
-h(\theta):=\operatorname{sgn}(f-\theta)\in \{-1,1\}
+h(\theta):=\operatorname{sgn}(f-\theta)\in \{-1,1\}.
 \end{equation}
 One can therefore train and tune $f$ ``independently" of the AMS, and then find the threshold $\theta$ for which the classifier $h(\theta)$ maximises the AMS. For example, one could train $f$ in a logistic regression (i.e. train $f$ such that it minimises a logistic loss), and then, on a second stage, choose the classification threshold based on AMS. This approach is presented in \cite{kotlowski2014consistent}
 \end{itemize}
@@ -121,11 +123,11 @@ We will see that the two-stage maximisation is much more performant (in terms of
 
 \subsection{Two-stage maximisation}
 
-While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. In the following, we explain the two stage procedure in more detail for a classifier $h:\mathcal{X}\to \{-1,1\}$, as defined in (\ref{classifier from f}) , where $\mathcal{X}$ denotes the features space, and \textbf{$f$ is trained by minimising a logistic loss}.\\
+While the direct maximisation with cv can be seen as a usual tuning procedure by cross validation, the two-stage maximisation should be justified. In the following, we explain the two stage procedure in more detail for a classifier $h:\mathcal{X}\to \{-1,1\}$, as defined in (\ref{classifier from f}), where $\mathcal{X}$ denotes the features space, and \textbf{$f$ is trained by minimising a logistic loss}.\\
 
 By incorporating the weights to the probabilities, without loss of generality one may write  $s$ (\ref{s weights}) and $b$ (\ref{b weights}) as
 
-$$s=s(h):=\mathbb{P}(h(\bm{X})=1,Y=1) \ \text{,} \ \ \ b=b(h):=\mathbb{P}(h(\bm{X})=-1,Y=1)$$
+$$s=s(h):=\mathbb{P}(h(\bm{X})=1,Y=1) \,\text{,} \ \ \ b=b(h):=\mathbb{P}(h(\bm{X})=-1,Y=1)$$
 where $\bm{X}$ denotes a random imput vector and $Y$ a random binary response. \cite{kotlowski2014consistent} justifies the two stage procedure explained above for logistic loss transformation of $f$, as follows. Given a classifier $h$ obtained from $f$ as in (\ref{classifier from f}), one can define the \textit{AMS regret} as
 \begin{equation}
 \label{regret}
@@ -142,7 +144,7 @@ for the expected logistic loss transformation of $f$,
 \label{eq: logloss}
 L(f):=\mathbb{E}\Big[\log(1+e^{-Yf(\bm{X})})\Big],
 \end{equation}
-and $$f^*:=\argmin_f \ L(f).$$
+and $$f^*:=\argmin_f L(f).$$
 The formal justification of the idea of 
 \begin{itemize}
 \item training a logistic loss transformation of $f$, and
@@ -152,7 +154,7 @@ comes from the following theorem.
 
 \begin{theorem}
 \label{thm: two stage maximisation}
-Given a real-valued function $f$ and the related classifier $h(\theta):=\operatorname{sgn}(f-\theta)$,  let $\hat{\theta}:=\argmax_\theta \ \operatorname{AMS}(h)$. Then,
+Given a real-valued function $f$ and the related classifier $h(\theta):=\operatorname{sgn}(f-\theta)$,  let $\hat{\theta}:=\argmax_\theta\operatorname{AMS}(h)$. Then,
 \begin{equation}
 \label{regret inequality}
 R_{AMS}(h(\hat{\theta}))\leq \frac{s(h^*)}{b(h^*)}\sqrt{\frac{1}{2}R_{log}(f)}
@@ -160,7 +162,7 @@ R_{AMS}(h(\hat{\theta}))\leq \frac{s(h^*)}{b(h^*)}\sqrt{\frac{1}{2}R_{log}(f)}
 
 \end{theorem}
 \begin{proof}
- See \cite{kotlowski2014consistent}-Theorem 2.
+ See Theorem 2 of \cite{kotlowski2014consistent}.
 \end{proof}
 
 That is, the AMS regret of classifier $h(\theta)$ is upper bounded by the logistic regret of the underlying $f$. It is possible to prove that it is sufficient to optimize $\theta$ on the empirical counterpart of AMS calculated on a separate validation sample. 
@@ -250,12 +252,12 @@ could be `better' (for different evaluation metrics) than the standard logistic 
 
 \subsection{AMS as direct measure - Cross Validation}
 
-As first attempt, a standard (i.e., $\theta=0.5$) weighted logistic regression (WLR) has been fitted on the train set. Cross validation suggested that we can expect to get an AMS in the range [0.15, 0.41] on a test set. This is a relatively small value compared to results in following sections. Using the entire set of training data to fit the WLR model, we get an AMS value of 0.18 on the test data set.
+As first attempt, a standard (i.e. $\theta=0.5$) weighted logistic regression (WLR) has been fitted on the train set. Cross validation suggested that we can expect to get an AMS in the range [0.15, 0.41] on a test set. This is a relatively small value compared to results in following sections. Using the entire set of training data to fit the WLR model, we get an AMS value of 0.18 on the test dataset.
 
 \subsection{Two-stage maximisation}
 
 \subsubsection{First stage}
-The training set $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ has been splitted into $D_t$ (containing $80\%$ of observations) and a validation set $D_v$, containing $20\%$ of the observations. A weighted logistic regression has been fitted on $D_t$, thus obtaining its estimated coefficients $\hat{\bbeta}$.
+The training set $\mathcal{D} = \{(\bm{x}_1, y_1,w_1),...,(\bm{x}_n,y_n,w_n)\}$ has been split into $D_t$ (containing $80\%$ of observations) and a validation set $D_v$, containing $20\%$ of the observations. A weighted logistic regression has been fitted on $D_t$, thus obtaining its estimated coefficients $\hat{\bbeta}$.
 
 \begin{remark}
 Every time we subset the original training set, we must re-calibrate the weights such that the sum of selected background weights be equal to $N_b$ and the sum of selected signal weights be equal to $N_s$ . A specific function has been created for it.
@@ -274,7 +276,7 @@ The validation set $D_v$ has been used to select the value of the threshold $\th
 \label{fig: train_tuned_theta}
 \end{figure}
 
-Figure \ref{fig: train_tuned_theta} shows that AMS is maximised for small values of $\theta$ (smaller than 0.02). The maximum value of AMS is around $1.45$ - much higher than the one found with a standard logistic regression. A simple Monte carlo maximisation of $\text{AMS}(\theta)$ finds the optimal threshold $\hat{\theta}$, which is generally found to be between around $0.004$. The red lines in Figure \ref{fig: train_tuned_theta} represent $\pm$one standard deviation from the mean (using cross-validation). \\
+Figure \ref{fig: train_tuned_theta} shows that AMS is maximised for small values of $\theta$ (smaller than 0.02). The maximum value of AMS is around $1.45$ - much higher than the one found with a standard logistic regression. A simple Monte Carlo maximisation of $\text{AMS}(\theta)$ finds the optimal threshold $\hat{\theta}$, which is generally found to be between around $0.004$. The red lines in Figure \ref{fig: train_tuned_theta} represent $\pm1$ standard deviation from the mean (using cross validation). \\
 
 The same procedure has beed tried after PCA. Analysis of variance explained by PC's suggested to try to use a small number of PC's (see Figure \ref{fig: screeplot}).
 \begin{figure}[H]
@@ -284,35 +286,35 @@ The same procedure has beed tried after PCA. Analysis of variance explained by P
 \label{fig: screeplot}
 \end{figure}
 
-We decided to use the first $3$ PC's as a new dataset, and repeat the procedure below. Cross-validated AMS values are plotted in Figure \ref{fig: tuned_pca}.
+We decided to use the first $3$ PCs as a new dataset, and repeat the procedure below. Cross-validated AMS values are plotted in Figure \ref{fig: tuned_pca}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.6]{../Pictures/trainpcatunedtheta.png}
-\caption{AMS values from CV procedure for different thresholds - on the first three pca's}
+\caption{AMS values from CV procedure for different thresholds - on the first three PCAs}
 \label{fig: tuned_pca}
 \end{figure}
 
-One can see that the AMS on validation set on the PC's is much more `peaked'. In particular, AMS variance is lower than before, and the range of suitable thetas is much shorter too. This might be a sign of underfitting due to the use of only three PCs. $\hat{\theta}_{pc}$ is almost always $0.0017$.
+One can see that the AMS on validation set on the PCs is much more `peaked'. In particular, AMS variance is lower than before, and the range of suitable thetas is much shorter too. This might be a sign of underfitting due to the use of only three PCs. $\hat{\theta}_{pc}$ is almost always $0.0017$.
 
 \subsection{Results on test set}
 
 It has already been said that a standard logistic regression on test set reaches an AMS of about $0.18$, which is a very low performance. \\
 
-On the contrary, the two stage procedure has a much better performance on the test set. With the threshold theta suggested from the second stage procedure on all the features, AMS on the test set is about $1.5$, which is a big improvement. With the threshold suggested after PCA, we get an AMS of about $1.37$. This is still much better than using a standard logistic regression classification rule, but smaller than for the threshold suggested by the original training set. This, as said before, may be connected to the model being too simplified - the range of suggested theta's was much shorter than before dimensional reduction.\\
+On the contrary, the two stage procedure has a much better performance on the test set. With the threshold $\theta$ suggested from the second stage procedure on all the features, AMS on the test set is about $1.5$, which is a big improvement. With the threshold suggested after PCA, we get an AMS of about $1.37$. This is still much better than using a standard logistic regression classification rule, but smaller than for the threshold suggested by the original training set. This, as said before, may be connected to the model being too simplified - the range of suggested theta's was much shorter than before dimensional reduction.\\
 
 There is further evidence suggesting that the two-stage procedure allows us to pick a threshold which is suited for the test set too. In Figure \ref{fig: AMS on test}, AMS values from predictions on test set are plotted for different thetas. It is clear that few values of theta lead to a high value of AMS, and among them we find the ones suggested from the second stage of our procedure. 
 
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.7]{../Pictures/testbadpractice.png}
-\caption{AMS values after predictions on test set - for different thetas.}
+\caption{AMS values after predictions on test set against the decision rule threshold theta- for different thetas.}
 \label{fig: AMS on test}
 \end{figure}
 
 \subsection{Discussion}
 
-The developments above go in redefining the use of a logistic regression for the Higgs Boson decay classification problem for AMS maximisation. The winning solution of the challenge leads, using a complicated black box model with many neural networks, to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that since the resulting AMS (1.5) after the two-stage procedure was much higher than for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems to not overfit: AMS values on train and test set are very close.
+The developments above go in redefining the use of a logistic regression for the Higgs boson decay classification problem for AMS maximisation. The winning solution of the challenge leads, using a complicated black box model with many neural networks, to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that since the resulting AMS (1.5) after the two-stage procedure was much higher than for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems not to overfit: AMS values on train and test set are very close.
 
 
 \bibliographystyle{plain}
