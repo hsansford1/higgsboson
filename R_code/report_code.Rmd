@@ -235,7 +235,7 @@ theta_CV <- threshold_CV(st_train_dimred[,1:3], st_train_dimred$Label, weights=w
 theta_CV  #less variance, both of theta and of AMS
 ```
 Finally, we can now use the threshold found in the cross-validation to find our predictions on the test set and the resulting AMS.
-```{r}
+```{r, warning=FALSE}
 theta <- theta_CV$max_theta
 
 test.pca <- prcomp(st_test[,1:30])
