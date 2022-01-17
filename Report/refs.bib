@@ -1,13 +1,4 @@
 
-@misc{higgs-challenge,
-	author = {Claire Adam-Bourdarios and Glen Cowan and Cecile Germain and
-	Isabelle Guyon and Balazs Kegl and David Rousseau},
-	title = {Learning to discover: the Higgs
-	boson machine learning challenge},
-	date = {July 2014}
-}
-
-
 @techreport{ATLAS-experiment,
 	title         = "{Evidence for Higgs Boson Decays to the $\tau^+\tau^-$
 	Final State with the ATLAS Detector}",
@@ -20,15 +11,74 @@
 	note          = "All figures including auxiliary figures are available at
 	https://atlas.web.cern.ch/Atlas/GROUPS/PHYSICS/CONFNOTES/ATLAS-CONF-2013-108",
 	}
-	
 
-@misc{kotlowski2014consistent,
-      title = {Consistent optimization of AMS by logistic loss minimization}, 
-      author = {Wojciech Kotlowski},
-      year = {2014},
-      eprint = {1412.2106},
-      archivePrefix = {arXiv},
-      primaryClass = {cs.LG}
+@InProceedings{higgs-challenge,
+	title = 	 {The {H}iggs boson machine learning challenge},
+	author = 	 {Adam-Bourdarios, Claire and Cowan, Glen and Germain, Cécile and Guyon, Isabelle and Kégl, Balàzs and Rousseau, David},
+	booktitle = 	 {Proceedings of the NIPS 2014 Workshop on High-energy Physics and Machine Learning},
+	pages = 	 {19--55},
+	year = 	 {2015},
+	editor = 	 {Cowan, Glen and Germain, Cécile and Guyon, Isabelle and Kégl, Balázs and Rousseau, David},
+	volume = 	 {42},
+	series = 	 {Proceedings of Machine Learning Research},
+	address = 	 {Montreal, Canada},
+	month = 	 {13 Dec},
+	publisher =    {PMLR},
+	pdf = 	 {http://proceedings.mlr.press/v42/cowa14.pdf},
+	url = 	 {https://proceedings.mlr.press/v42/cowa14.html},
+	abstract = 	 {The Higgs Boson Machine Learning Challenge (HiggsML or the Challenge for short) was organized to promote collaboration between high energy physicists and data scientists. The ATLAS experiment at CERN provided simulated data that has been used by physicists in a search for the Higgs boson. The Challenge was organized by a small group of ATLAS physicists and data scientists. It was hosted  by Kaggle at \urlhttps://www.kaggle.com/c/higgs-boson; the challenge data is now available on \url\opendataLink. This paper provides the physics background and explains the challenge setting, the challenge design, and analyzes its results.}
+}
+
+@misc{ATLAS-dataset,
+	author        = "ATLAS collaboration",
+	title         = "Dataset from the ATLAS Higgs Boson Machine Learning Challenge 2014",
+	howpublished  = "CERN Open Data Portal",
+	year          = "2014",
+	url           = "http://opendata.cern.ch/record/328"
+}
+
+@book{hastie2009elements,
+	title={The Elements of Statistical Learning: Data Mining, Inference, and Prediction},
+	author={Hastie, T. and Tibshirani, R. and Friedman, J.H.},
+	isbn={9780387848846},
+	lccn={2008941148},
+	series={Springer series in statistics},
+	url={https://books.google.co.uk/books?id=eBSgoAEACAAJ},
+	year={2009},
+	publisher={Springer}
+}
+
+@InProceedings{kotlowski2014consistent,
+	title = 	 {Consistent optimization of AMS by logistic loss minimization},
+	author = 	 {Kotłowski, Wojciech},
+	booktitle = 	 {Proceedings of the NIPS 2014 Workshop on High-energy Physics and Machine Learning},
+	pages = 	 {99--108},
+	year = 	 {2015},
+	editor = 	 {Cowan, Glen and Germain, Cécile and Guyon, Isabelle and Kégl, Balázs and Rousseau, David},
+	volume = 	 {42},
+	series = 	 {Proceedings of Machine Learning Research},
+	address = 	 {Montreal, Canada},
+	month = 	 {13 Dec},
+	publisher =    {PMLR},
+	pdf = 	 {http://proceedings.mlr.press/v42/kotl14.pdf},
+	url = 	 {https://proceedings.mlr.press/v42/kotl14.html},
+	abstract = 	 {In this paper, we theoretically justify an approach popular among participants of the Higgs Boson Machine Learning Challenge to optimize approximate median significance (AMS). The approach is based on the following two-stage procedure. First, a real-valued function f is learned by minimizing a surrogate loss for binary classification, such as logistic loss, on the training sample. Then, given f, a threshold \hatθ is tuned on a separate validation sample, by direct optimization of AMS. We show that the regret of the resulting classifier (obtained from thresholding f on \hatθ) measured with respect to the squared AMS, is upperbounded by the regret of f measured with respect to the logistic loss. Hence, we prove that minimizing logistic surrogate is a consistent method of optimizing AMS. }
 }
 
 
+@InProceedings{melis2014winning,
+	title = 	 {Dissecting the Winning Solution of the HiggsML Challenge},
+	author = 	 {Melis, Gábor},
+	booktitle = 	 {Proceedings of the NIPS 2014 Workshop on High-energy Physics and Machine Learning},
+	pages = 	 {57--67},
+	year = 	 {2015},
+	editor = 	 {Cowan, Glen and Germain, Cécile and Guyon, Isabelle and Kégl, Balázs and Rousseau, David},
+	volume = 	 {42},
+	series = 	 {Proceedings of Machine Learning Research},
+	address = 	 {Montreal, Canada},
+	month = 	 {13 Dec},
+	publisher =    {PMLR},
+	pdf = 	 {http://proceedings.mlr.press/v42/meli14.pdf},
+	url = 	 {https://proceedings.mlr.press/v42/meli14.html},
+	abstract = 	 {The recent Higgs Machine Learning Challenge pitted one of the largest crowds seen in machine learning contests against one another. In this paper, we present the winning solution and investigate the effect of extra features, the choice of neural network activation function, regularization and data set size. We demonstrate improved classification accuracy using a very similar network architecture on the permutation invariant MNIST benchmark. Furthermore, we advocate the use of a simple method that lies on the boundary between bagging and cross-validation to both estimate the generalization error and improve accuracy.}
+}

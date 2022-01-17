@@ -103,7 +103,7 @@ High-energy physicists suggest the use of the \textit{approximate median signifi
 \end{equation}
 to optimise the selection region for discovery significance, where $b_\text{reg}$ is a regularisation term suggested to be set to $b_\text{reg}=10$. Hence, our aim is simply to train a classifier $g$ based on the training data $\mathcal{D}$ with the goal of maximising the AMS on some unseen test data.
 
-The ATLAS experiment dataset (SHOULD WE CITE THE ACTUAL DATASET?) provided for the Higgs Boson Machine Learning Challenge comprises 250000 training samples and 550000 testing samples.
+The ATLAS experiment dataset \cite{ATLAS-dataset} provided for the Higgs Boson Machine Learning Challenge comprises 250000 training samples and 550000 testing samples.
 
 \section{Maximising the AMS}
 
@@ -184,7 +184,7 @@ Suppose $y\in \{-1,1\}$. Note that
 \begin{align}
 p(y=1|\x)&=\frac{p(\x|y=1)p(y=1)}{p(\x|y=1)p(y=1)+p(\x|y=-1)p(y=-1))} = \frac{1}{1+\frac{p(\x|y=-1)p(y=-1)}{p(\x|y=1)p(y=1)}}
 \end{align}
-Logistic regression is a discriminative learning model which aims at minimising an expected loss by predicting 
+Logistic regression \cite{hastie2009elements} is a discriminative learning model which aims at minimising an expected loss by predicting 
 $$\hat{y}=\argmin_{y_0}\mathbb{E}_{p(y|\x)}(L(y,y_0)|\x)$$
 and by \textit{inferring $p(y|\x)$ directly}. \\
 
@@ -314,7 +314,7 @@ There is further evidence suggesting that the two-stage procedure allows us to p
 
 \subsection{Discussion}
 
-The developments above go in redefining the use of a logistic regression for the Higgs boson decay classification problem for AMS maximisation. The winning solution of the challenge leads, using a complicated black box model with many neural networks, to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that since the resulting AMS (1.5) after the two-stage procedure was much higher than for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems not to overfit: AMS values on train and test set are very close.
+The developments above go in redefining the use of a logistic regression for the Higgs boson decay classification problem for AMS maximisation. The winning solution of the challenge \cite{melis2014winning}, using a complicated black box model with many neural networks, leads to an AMS of about $3.6$, which is higher than our value ($1.5$). Surely, that winning model is more performant in prediction than ours. However, the scope of our investigation was the optimal tuning of logistic regression. We hope that since the resulting AMS (1.5) after the two-stage procedure was much higher than for a standard classification (0.18), this strategy might then be applied to more advanced and complex models, producing a sharp increase in AMS. An advantage of logistic regression is that the model's coefficients have a clear interpretation in terms of odds-ratio. Moreover our set up is that it is theoretically justified in \cite{kotlowski2014consistent}, Theorem 2 (see \ref{thm: two stage maximisation}). Another advantage is that our model seems not to overfit: AMS values on train and test set are very close.
 
 
 \bibliographystyle{plain}

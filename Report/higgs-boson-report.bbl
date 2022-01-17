@@ -8,12 +8,42 @@
   https://atlas.web.cern.ch/Atlas/GROUPS/PHYSICS/CONFNOTES/ATLAS-CONF-2013-108.
 
 \bibitem{higgs-challenge}
-Claire Adam-Bourdarios, Glen Cowan, Cecile Germain, Isabelle Guyon, Balazs
-  Kegl, and David Rousseau.
-\newblock Learning to discover: the higgs boson machine learning challenge.
+Claire Adam-Bourdarios, Glen Cowan, Cécile Germain, Isabelle Guyon, Balàzs
+  Kégl, and David Rousseau.
+\newblock The {H}iggs boson machine learning challenge.
+\newblock In Glen Cowan, Cécile Germain, Isabelle Guyon, Balázs Kégl, and
+  David Rousseau, editors, {\em Proceedings of the NIPS 2014 Workshop on
+  High-energy Physics and Machine Learning}, volume~42 of {\em Proceedings of
+  Machine Learning Research}, pages 19--55, Montreal, Canada, 13 Dec 2015.
+  PMLR.
+
+\bibitem{ATLAS-dataset}
+ATLAS collaboration.
+\newblock Dataset from the atlas higgs boson machine learning challenge 2014.
+\newblock CERN Open Data Portal, 2014.
+
+\bibitem{hastie2009elements}
+T.~Hastie, R.~Tibshirani, and J.H. Friedman.
+\newblock {\em The Elements of Statistical Learning: Data Mining, Inference,
+  and Prediction}.
+\newblock Springer series in statistics. Springer, 2009.
 
 \bibitem{kotlowski2014consistent}
-Wojciech Kotlowski.
-\newblock Consistent optimization of ams by logistic loss minimization, 2014.
+Wojciech Kotłowski.
+\newblock Consistent optimization of ams by logistic loss minimization.
+\newblock In Glen Cowan, Cécile Germain, Isabelle Guyon, Balázs Kégl, and
+  David Rousseau, editors, {\em Proceedings of the NIPS 2014 Workshop on
+  High-energy Physics and Machine Learning}, volume~42 of {\em Proceedings of
+  Machine Learning Research}, pages 99--108, Montreal, Canada, 13 Dec 2015.
+  PMLR.
+
+\bibitem{melis2014winning}
+Gábor Melis.
+\newblock Dissecting the winning solution of the higgsml challenge.
+\newblock In Glen Cowan, Cécile Germain, Isabelle Guyon, Balázs Kégl, and
+  David Rousseau, editors, {\em Proceedings of the NIPS 2014 Workshop on
+  High-energy Physics and Machine Learning}, volume~42 of {\em Proceedings of
+  Machine Learning Research}, pages 57--67, Montreal, Canada, 13 Dec 2015.
+  PMLR.
 
 \end{thebibliography}
