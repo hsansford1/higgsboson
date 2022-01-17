@@ -1,19 +1,40 @@
 \begin{thebibliography}{1}
 
+\bibitem{higgs-challenge}
+C.~Adam-Bourdarios, G.~Cowan, C.~Germain, I.~Guyon, B.~Kégl, and D.~Rousseau,
+  ``The {H}iggs boson machine learning challenge,'' in {\em Proceedings of the
+  NIPS 2014 Workshop on High-energy Physics and Machine Learning} (G.~Cowan,
+  C.~Germain, I.~Guyon, B.~Kégl, and D.~Rousseau, eds.), vol.~42 of {\em
+  Proceedings of Machine Learning Research}, (Montreal, Canada), pp.~19--55,
+  PMLR, 13 Dec 2015.
+
+\bibitem{kotlowski2014consistent}
+W.~Kotłowski, ``Consistent optimization of ams by logistic loss
+  minimization,'' in {\em Proceedings of the NIPS 2014 Workshop on High-energy
+  Physics and Machine Learning} (G.~Cowan, C.~Germain, I.~Guyon, B.~Kégl, and
+  D.~Rousseau, eds.), vol.~42 of {\em Proceedings of Machine Learning
+  Research}, (Montreal, Canada), pp.~99--108, PMLR, 13 Dec 2015.
+
 \bibitem{ATLAS-experiment}
-{Evidence for Higgs Boson Decays to the $\tau^+\tau^-$ Final State with the
-  ATLAS Detector}.
-\newblock Technical report, CERN, Geneva, Nov 2013.
+``{Evidence for Higgs Boson Decays to the $\tau^+\tau^-$ Final State with the
+  ATLAS Detector},'' tech. rep., CERN, Geneva, Nov 2013.
 \newblock All figures including auxiliary figures are available at
   https://atlas.web.cern.ch/Atlas/GROUPS/PHYSICS/CONFNOTES/ATLAS-CONF-2013-108.
 
-\bibitem{higgs-challenge}
-Claire Adam-Bourdarios, Glen Cowan, Cecile Germain, Isabelle Guyon, Balazs
-  Kegl, and David Rousseau.
-\newblock Learning to discover: the higgs boson machine learning challenge.
+\bibitem{ATLAS-dataset}
+{ATLAS collaboration}, ``Dataset from the atlas higgs boson machine learning
+  challenge 2014.'' CERN Open Data Portal, 2014.
 
-\bibitem{kotlowski2014consistent}
-Wojciech Kotlowski.
-\newblock Consistent optimization of ams by logistic loss minimization, 2014.
+\bibitem{hastie2009elements}
+T.~Hastie, R.~Tibshirani, and J.~Friedman, {\em The Elements of Statistical
+  Learning: Data Mining, Inference, and Prediction}.
+\newblock Springer series in statistics, Springer, 2009.
+
+\bibitem{melis2014winning}
+G.~Melis, ``Dissecting the winning solution of the higgsml challenge,'' in {\em
+  Proceedings of the NIPS 2014 Workshop on High-energy Physics and Machine
+  Learning} (G.~Cowan, C.~Germain, I.~Guyon, B.~Kégl, and D.~Rousseau, eds.),
+  vol.~42 of {\em Proceedings of Machine Learning Research}, (Montreal,
+  Canada), pp.~57--67, PMLR, 13 Dec 2015.
 
 \end{thebibliography}

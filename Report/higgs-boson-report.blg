@@ -1,49 +1,48 @@
-This is BibTeX, Version 0.99d (TeX Live 2021)
+This is BibTeX, Version 0.99d (TeX Live 2019/Debian)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: higgs-boson-report.aux
-The style file: plain.bst
+The style file: ieeetr.bst
 Database file #1: refs.bib
-Warning--to sort, need author or key in ATLAS-experiment
 Warning--empty author in ATLAS-experiment
-You've used 3 entries,
-            2118 wiz_defined-function locations,
-            512 strings with 4580 characters,
-and the built_in function-call counts, 741 in all, are:
-= -- 64
-> -- 41
+You've used 6 entries,
+            1876 wiz_defined-function locations,
+            517 strings with 4713 characters,
+and the built_in function-call counts, 1711 in all, are:
+= -- 146
+> -- 95
 < -- 0
-+ -- 17
-- -- 14
-* -- 47
-:= -- 128
-add.period$ -- 7
-call.type$ -- 3
-change.case$ -- 17
++ -- 33
+- -- 27
+* -- 164
+:= -- 262
+add.period$ -- 8
+call.type$ -- 6
+change.case$ -- 6
 chr.to.int$ -- 0
-cite$ -- 5
-duplicate$ -- 22
-empty$ -- 61
-format.name$ -- 14
-if$ -- 150
+cite$ -- 7
+duplicate$ -- 76
+empty$ -- 160
+format.name$ -- 27
+if$ -- 393
 int.to.chr$ -- 0
-int.to.str$ -- 3
-missing$ -- 0
-newline$ -- 16
-num.names$ -- 4
+int.to.str$ -- 6
+missing$ -- 5
+newline$ -- 23
+num.names$ -- 11
 pop$ -- 23
 preamble$ -- 1
-purify$ -- 13
+purify$ -- 0
 quote$ -- 0
-skip$ -- 23
+skip$ -- 40
 stack$ -- 0
-substring$ -- 15
-swap$ -- 2
+substring$ -- 75
+swap$ -- 25
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 12
-warning$ -- 2
-while$ -- 4
-width$ -- 4
-write$ -- 29
-(There were 2 warnings)
+type$ -- 0
+warning$ -- 1
+while$ -- 17
+width$ -- 7
+write$ -- 67
+(There was 1 warning)
