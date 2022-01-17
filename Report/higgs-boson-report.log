@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.10.18)  17 JAN 2022 12:10
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.10.18)  17 JAN 2022 12:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -634,16 +634,16 @@ Package pdftex.def Info: ../Pictures/testbadpractice.png  used on input line 31
 0.
 (pdftex.def)             Requested size: 249.78148pt x 261.90167pt.
 (./higgs-boson-report.bbl [8 <../Pictures/testbadpractice.png>])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 323.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 324.
  [9]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 323.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 324.
 
 (./higgs-boson-report.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 323.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 323.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 324.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 324.
 Package rerunfilecheck Info: File `higgs-boson-report.out' has not changed.
 (rerunfilecheck)             Checksum: 65739CAFEB49ECF63DE2D34BF7E11906;1095.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 323.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 324.
  ) 
 Here is how much of TeX's memory you used:
  10772 strings out of 483107
@@ -652,7 +652,7 @@ Here is how much of TeX's memory you used:
  25513 multiletter control sequences out of 15000+600000
  547443 words of font info for 78 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 43i,10n,77p,1166b,443s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 43i,10n,77p,1131b,443s stack positions out of 5000i,500n,10000p,200000b,80000s
  </home/vb21939/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm1000.6
 00pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><
 /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/s
@@ -673,10 +673,10 @@ e/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf
 -dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/share/texlive/texmf-dist/fonts/t
 ype1/public/amsfonts/symbols/msbm10.pfb>
-Output written on higgs-boson-report.pdf (9 pages, 326952 bytes).
+Output written on higgs-boson-report.pdf (9 pages, 327004 bytes).
 PDF statistics:
- 276 PDF objects out of 1000 (max. 8388607)
- 235 compressed objects within 3 object streams
+ 275 PDF objects out of 1000 (max. 8388607)
+ 234 compressed objects within 3 object streams
  58 named destinations out of 1000 (max. 500000)
  149 words of extra memory for PDF output out of 10000 (max. 10000000)
 
