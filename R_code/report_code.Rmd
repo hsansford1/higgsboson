@@ -88,7 +88,7 @@ cv.logistic$aggr
 cv.logistic$measures.test
 
 ```
-Now, we fit a WLR model using the whole trainind data set and check how it performs on the test data.
+Now, we fit a WLR model using the whole training data set and check how it performs on the test data.
 ```{r, warning=FALSE}
 train_control <- trainControl(method = "cv", number = 10)
 
@@ -238,11 +238,7 @@ Finally, we can now use the threshold found in the cross-validation to find our 
 ```{r, warning=FALSE}
 theta <- theta_CV$max_theta
 
-test.pca <- prcomp(st_test[,1:30])
-st_test_dimred <- data.frame("PCA1"=test.pca$x[,1],"PCA2"=test.pca$x[,2],"PCA3"=test.pca$x[,3])
-st_test_dimred["Label"] <- st_test$Label
-
-probabilities <- predict(logreg_weighted_pca$finalModel, st_test_dimred[,1:3], type = "response")
+probabilities <- predict(logreg_weighted2$finalModel, st_test[,1:30], type = "response")
 
 predicted.classes <- ifelse(probabilities > theta, 1, 0)
 
