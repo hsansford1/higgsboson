@@ -216,12 +216,12 @@ In this dataset weights have an essential role in rebalancing the likelihood of 
 $$\hat{\bbeta}=\argmax_{\bbeta}\sum_{i\in D}-\log(1+\exp\{-y_i\bbeta'\x_i \}),$$
 weighted logistic regression takes into account weights $w_i$ by weighting the corresponding observations, finding
 \begin{equation}
-\hat{\bbeta}=\argmax_{\bbeta}\sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \}).
+\hat{\bbeta}=\argmax_{\bbeta}\sum_{i\in D}-\log(1+\exp\{- y_i\bbeta'(w_i\x_i) \}).
 \end{equation}
 
 \begin{remark}
 Elastic net (weighted) logistic regression, where
-$$\hat{\bbeta}= \argmax_{\bbeta}\left[ \left( \sum_{i\in D}-\log(1+\exp\{-w_i y_i\bbeta'\x \})\right)  + \lambda\left[ \frac{1-\alpha}{2}||\bbeta||^2_2 + \alpha||\bbeta||_1 \right] \right], 
+$$\hat{\bbeta}= \argmax_{\bbeta}\left[ \left( \sum_{i\in D}-\log(1+\exp\{- y_i\bbeta'(w_i\x_i) \})\right)  + \lambda\left[ \frac{1-\alpha}{2}||\bbeta||^2_2 + \alpha||\bbeta||_1 \right] \right], 
 $$
 penalises the L1 and L2 norms of the coefficients. This was implemented for both the direct and two-stage approaches with $\alpha, \lambda$ selected by cross validation. In both cases $\lambda=0$ -- the unpenalised model -- performed best. Here the training dataset (250000 observations) was very large compared to the number of features (30); with higher-dimensional models an elastic net regression may be beneficial.
 \end{remark}
